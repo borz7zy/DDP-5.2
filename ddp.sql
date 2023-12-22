@@ -166,7 +166,7 @@ CREATE TABLE `players` (
   `Pass` varchar(512) CHARACTER SET cp1251 COLLATE cp1251_general_cs NOT NULL,
   `HASH` varchar(512) CHARACTER SET cp1251 COLLATE cp1251_general_cs NOT NULL,
   `Skin` int(11) NOT NULL DEFAULT 0,
-  `weapons` text NOT NULL DEFAULT '0',
+  `weapons` text NOT NULL DEFAULT '',
   `ColorPlayer` int(11) NOT NULL DEFAULT 0,
   `SpawnChange` int(11) NOT NULL DEFAULT 0,
   `Labirint1` int(11) NOT NULL DEFAULT 0,
@@ -234,22 +234,10 @@ ALTER TABLE `houses`
   ADD PRIMARY KEY (`id`);
 
 --
--- Индексы таблицы `new_users`
---
-ALTER TABLE `new_users`
-  ADD PRIMARY KEY (`ID`);
-
---
 -- Индексы таблицы `players`
 --
 ALTER TABLE `players`
   ADD PRIMARY KEY (`PID`);
-
---
--- Индексы таблицы `SUUC`
---
-ALTER TABLE `SUUC`
-  ADD PRIMARY KEY (`DBID`);
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц
@@ -278,12 +266,6 @@ ALTER TABLE `houses`
 --
 ALTER TABLE `players`
   MODIFY `PID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
-
---
--- AUTO_INCREMENT для таблицы `SUUC`
---
-ALTER TABLE `SUUC`
-  MODIFY `DBID` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
