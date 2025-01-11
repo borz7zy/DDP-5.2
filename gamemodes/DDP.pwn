@@ -18,7 +18,7 @@
 #include <mxdate>
 #include <mapandreas>
 
-#pragma dynamic 65536
+#pragma dynamic 50484
 
 #define MAX_GANGS 1000
 
