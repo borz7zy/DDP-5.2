@@ -6,11 +6,11 @@ stock PlayerDialogMenu(playerid){
 		SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В тюрьме меню не работает!");
 		return 1;
 	}
-	if(Events[playerid][0] == 1){
+	if(Events[playerid][0]){
 	    SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Меню недоступно в лабиринте! Для выхода с него введите {CCFF00}/exit");
 	    return 1;
 	}
-	if((Events[playerid][1] || Events[playerid][2] || Events[playerid][3]) == 1){
+	if((Events[playerid][1] || Events[playerid][2] || Events[playerid][3])){
 		SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Меню недоступно в Трек Мании! Для выхода с него введите {CCFF00}/exit");
 		SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для прохождения уровня сначала, пропишите {CCFF00}/restart");
 	    return 1;

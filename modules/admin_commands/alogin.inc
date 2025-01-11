@@ -1,6 +1,6 @@
 /*CMD:alogin(playerid, params[]){//gettime() + days*86400
 	new pass[200];
-	if(sscanf(params, "s[200]", pass)) return SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} USE: /alogin [пароль админки]");
+	if(sscanf(params, "s[200]", pass)) return SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} USE: /alogin [пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ]");
 	new str[128];
 	mysql_format(ServerDB, str, sizeof(str), "SELECT * FROM `admins` WHERE `aname` = '%e' LIMIT 1", PlayerInfo[playerid][pName]);
 	mysql_tquery(ServerDB, str, "aLogin", "ds", playerid, pass);
@@ -14,7 +14,7 @@ fpub:aLogin(playerid,pass[]){
 		cache_get_value_name(0, "hash", AI[playerid][aHASH], 17);
 		new hashed_pass[65];
 		new str[1024];
-		SHA256_PassHash(pass, AI[playerid][aHASH], hashed_pass, 65);
+		SHA256_Hash(pass, AI[playerid][aHASH], hashed_pass, 65);
 		if(strcmp(AI[playerid][aPass], hashed_pass) == 0){
 
 			cache_get_value_int(0, "id", AI[playerid][db_ID]);
@@ -31,17 +31,17 @@ fpub:aLogin(playerid,pass[]){
 			cache_get_value_int(0, "loggedcount", AI[playerid][aLogCount]);
 			cache_get_value_int(0, "loggedtime", AI[playerid][aLogCount]);
 			if(AI[playerid][aBlock] == 1){
-			    format(str, sizeof(str), "{FF0000}НА АВТОРИЗАЦИЮ В АДМИН ПАНЕЛИ ВИСИТ БЛОК!!!\n\
-				\n{FFFFFF}Админ аккаунт: {99ff99}%s\
-				\n{FFFFFF}Админ-права выдал: {99ff99}%s\
-				\n{FFFFFF}Админ-права снял: {99FF99}%s\
-				\n{FFFFFF}Причина снятия админ-прав: {99FF99}%s\n\
-				\n{FFFFFF}Если хотите вернуть админку, напишите главному администратору, отправьте ему скриншот этого окна и ожидайте ответа.",
+			    format(str, sizeof(str), "{FF0000}пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ!!!\n\
+				\n{FFFFFF}пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {99ff99}%s\
+				\n{FFFFFF}пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ: {99ff99}%s\
+				\n{FFFFFF}пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ: {99FF99}%s\
+				\n{FFFFFF}пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅ: {99FF99}%s\n\
+				\n{FFFFFF}пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.",
 				AI[playerid][aName],
 				AI[playerid][aMakeAdmin],
 				AI[playerid][aMakeAdminEnd],
 				AI[playerid][aReasonEnd]);
-			    ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "Авторизация админки ЗАБЛОКИРОВАНА!", str, "ОК", "");
+			    ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!", str, "пїЅпїЅ", "");
 				AI[playerid][db_ID] = 0;
 				AI[playerid][aHASH][0] = EOS;
 				AI[playerid][aPass][0] = EOS;
@@ -61,11 +61,11 @@ fpub:aLogin(playerid,pass[]){
 				AI[playerid][aGod] = 0;
 				return 1;
 			}else if(AI[playerid][aDEnd] <= gettime() && AI[playerid][aDEnd] != 0){
-				SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Подписка на админку закончилась!");
-				SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Если желаете продлить, напишите главному администратору!");
-				mysql_format(ServerDB, str, sizeof(str), "UPDATE `admins` SET `reasonend`='%s', `blocklogged`='1', `setendadmin`='%e' WHERE `aname`='%e' LIMIT 1", "Закончена подписка", "SYSTEM", AI[playerid][aName]);
+				SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
+				SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
+				mysql_format(ServerDB, str, sizeof(str), "UPDATE `admins` SET `reasonend`='%s', `blocklogged`='1', `setendadmin`='%e' WHERE `aname`='%e' LIMIT 1", "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", "SYSTEM", AI[playerid][aName]);
 				mysql_tquery(ServerDB, str, "", "");
-				format(str, sizeof(str), "%s{FFFFFF} Администратор %s[%d] просрочил срок администрирования. Снят!", NS, AI[playerid][aName], playerid);
+				format(str, sizeof(str), "%s{FFFFFF} пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ %s[%d] пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ!", NS, AI[playerid][aName], playerid);
 				SendAdminMessage(COLOR_VIOLET, str);
 				AI[playerid][db_ID] = 0;
 				AI[playerid][aHASH][0] = EOS;
@@ -86,19 +86,19 @@ fpub:aLogin(playerid,pass[]){
 				AI[playerid][aGod] = 0;
 				return 1;
 			}else{
-				format(str, sizeof(str), "{99FF99}Админка загружена!\n\n{FFFFFF}Уровень: {99FF99}%d\n{FFFFFF}Дата выдачи: {99FF99}%s\n{FFFFFF}Дата окончания: {99FF99}%s\n\n{FFFFFF}Подробную статистику админки вы можете посмотреть по команде {99FF99}/ainfo",
-				AI[playerid][aLevel],date("%dd/%mm/%yyyy в %hh:%ii:%ss",AI[playerid][aDGet]),date("%dd/%mm/%yyyy в %hh:%ii:%ss",AI[playerid][aDEnd]));//
-				ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "Загрузка админки", str, "ОК", "");
+				format(str, sizeof(str), "{99FF99}пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!\n\n{FFFFFF}пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {99FF99}%d\n{FFFFFF}пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: {99FF99}%s\n{FFFFFF}пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {99FF99}%s\n\n{FFFFFF}пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ {99FF99}/ainfo",
+				AI[playerid][aLevel],date("%dd/%mm/%yyyy пїЅ %hh:%ii:%ss",AI[playerid][aDGet]),date("%dd/%mm/%yyyy пїЅ %hh:%ii:%ss",AI[playerid][aDEnd]));//
+				ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ", str, "пїЅпїЅ", "");
 				AI[playerid][aLogCount]++;
 				format(str, sizeof(str), "<A> {CCFF00}%s {FF0000}alogin {FFFFFF}| IP:{CCFF00} %s {FFFFFF}| {FF0000}%d LVL", PlayerInfo[playerid][pName], PlayerInfo[playerid][pIPAdr], AI[playerid][aLevel]);
 				SendAdminMessage(COLOR_VIOLET, str);
 			}
 		}else{
-			SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Неверный пароль!");
+			SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ!");
 		}
 	}
 	else{
-		SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Вы не администратор!");
+		SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
 	}
 	return 1;
 }

@@ -4,7 +4,7 @@ CMD:mute(playerid, params[]){
 	if(sscanf(params, "dds[144]", params[0], params[1], params[2])) return SendClientMessage(playerid, COLOR_VIOLET, "USE: {FFFFFF}/mute [id] [минуты] [причина]");
 	if(!IsPlayerConnected(params[0])) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы ввели ID оффлайн игрока!");
 	if(params[1] < 1) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Минут не может быть меньше 1!");
-	if(gPlayerLogged[params[0]] == 0 || gPlayerSpawned[params[0]] == 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не залогинился/заспавнился!");
+	if(!gPlayerLogged[params[0]] || !gPlayerSpawned[params[0]]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не залогинился/заспавнился!");
 	if(AI[params[0]][aLevel] > AI[playerid][aLevel]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Админ стоит на уровень выше вас{FF0000}! {FFFFFF}Невозможно{FF0000}!");
 	mysql_format(ServerDB, str, sizeof(str), "SELECT `IDDB` FROM `mutedlist` WHERE `IDDB` = '%d' LIMIT 1", PlayerInfo[params[0]][pMID]);
 	mysql_tquery(ServerDB, str, "MutePlayer", "ddds", params[0], params[1], playerid, params[2]);

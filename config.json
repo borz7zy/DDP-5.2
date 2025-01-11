@@ -2,7 +2,7 @@
     "announce": true,
     "artwork": {
         "cdn": "",
-        "enable": true,
+        "enable": false,
         "models_path": "models",
         "port": 7777,
         "web_server_bind": ""
@@ -96,14 +96,16 @@
     "pawn": {
         "legacy_plugins": [],
         "main_scripts": [
-            "gungame 1"
+            "DDP 1"
         ],
-        "side_scripts": []
+        "side_scripts": [
+            "mapping"
+        ]
     },
     "rcon": {
-        "allow_teleport": false,
+        "allow_teleport": true,
         "enable": false,
-        "password": "changeme1"
+        "password": "jnjnjkoasdkjNDUSHYASD9n2"
     },
     "sleep": 5.0,
     "use_dyn_ticks": true,

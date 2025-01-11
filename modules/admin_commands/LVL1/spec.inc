@@ -2,7 +2,7 @@ CMD:spec(playerid, params[]){
 	if(AI[playerid][aLevel] < 1) return 1;
 	if(sscanf(params, "d", params[0])) return SendClientMessage(playerid, COLOR_VIOLET, "USE: {FFFFFF}/spec [id]");
 	if(!IsPlayerConnected(params[0])) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрока нет на сервере!");
-	if(gPlayerLogged[params[0]] == 0 || gPlayerSpawned[params[0]] == 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не заспавнился/авторизировался!");
+	if(!gPlayerLogged[params[0]] || !gPlayerSpawned[params[0]]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не заспавнился/авторизировался!");
 	if(playerid == params[0]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Невозможно включить слежку за собой!");
 	if(AI[params[0]][aSpectateID] != INVALID_PLAYER_ID && GetPlayerState(params[0]) == PLAYER_STATE_SPECTATING) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Этот админ в наблюдении!");
 	StartSpectate(playerid, params[0]);
@@ -27,7 +27,7 @@ stock StartSpectate(playerid, InvID2)
 		}
 		SetPlayerInterior(playerid,GetPlayerInterior(InvID2));
 		SetPlayerVirtualWorld(playerid,GetPlayerVirtualWorld(InvID2));
-		TogglePlayerSpectating(playerid, 1);
+		TogglePlayerSpectating(playerid, true);
 		AI[playerid][aSpectateID] = InvID2;
 		AI[playerid][aSpectateType] = ADMIN_SPEC_TYPE_VEHICLE;
 		PlayerSpectateVehicle(playerid, GetPlayerVehicleID(InvID2), SPECTATE_MODE_NORMAL);
@@ -58,7 +58,7 @@ stock StartSpectate(playerid, InvID2)
 		}
 		SetPlayerInterior(playerid,GetPlayerInterior(InvID2));
 		SetPlayerVirtualWorld(playerid,GetPlayerVirtualWorld(InvID2));
-		TogglePlayerSpectating(playerid, 1);
+		TogglePlayerSpectating(playerid, true);
 		if(AI[playerid][aSpectateType] == ADMIN_SPEC_TYPE_VEHICLE){
 			PlayerTextDrawHide(playerid, HMS44[playerid]);
 			PlayerTextDrawHide(playerid, spec_TD[playerid]);
@@ -76,7 +76,7 @@ stock StopSpectate(playerid)
 		PlayerTextDrawHide(playerid, HMS44[playerid]);
 		PlayerTextDrawHide(playerid, spec_TD[playerid]);
 	}
-	TogglePlayerSpectating(playerid, 0);
+	TogglePlayerSpectating(playerid, false);
 	AI[playerid][aSpectateID] = INVALID_PLAYER_ID;
 	AI[playerid][aSpectateType] = ADMIN_SPEC_TYPE_NONE;
 	

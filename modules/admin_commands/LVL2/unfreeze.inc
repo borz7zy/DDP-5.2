@@ -8,6 +8,6 @@ CMD:unfreeze(playerid, params[])
 	format(str, sizeof(str), ""NS" {FFFFFF}Админ {CCFF00}%s {FFFFFF}разморозил игрока {CCFF00}%s{FFFFFF}.", PlayerInfo[playerid][pName], PlayerInfo[params[0]][pName]);
 	SendClientMessageToAll(COLOR_VIOLET, str);
 	SetPVarInt(params[0], "Freeze", 0);
-	TogglePlayerControllable(params[0], 1);
+	TogglePlayerControllable(params[0], true);
 	return 1;
 }

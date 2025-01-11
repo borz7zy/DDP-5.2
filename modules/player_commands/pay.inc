@@ -1,7 +1,7 @@
 CMD:pay(playerid, params[]){
 	if(sscanf(params, "dd", params[0], params[1])) return SendClientMessage(playerid, COLOR_VIOLET, "USE: {FFFFFF}/pay [id игрока] [деньги]");
 	if(!IsPlayerConnected(params[0])) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не в сети!");
-	if(gPlayerLogged[params[0]] == 0)return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок ещё не авторизовался!");
+	if(!gPlayerLogged[params[0]] || gPlayerSpawned[params[0]])return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок ещё не авторизовался!");
 	if(params[1] <= 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не можете указать 0 ли меньше!");
 	if(playerid == params[0]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы указали свой ID");
 	if(params[1] > GetPVarInt(playerid, "PlMon")) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не имеете столько денег!");

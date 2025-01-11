@@ -2,7 +2,7 @@ CMD:explode(playerid, params[]){
 	if(AI[playerid][aLevel] < 1) return 1;
 	if(sscanf(params, "d", params[0])) return SendClientMessage(playerid, COLOR_VIOLET, "USE: {FFFFFF}/explode [id]");
 	if(!IsPlayerConnected(params[0])) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрока с таким ID нет на сервере!");
-	if(gPlayerLogged[params[0]] == 0 || gPlayerSpawned[params[0]] == 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок ещё не заспавнился/залогинился!");
+	if(!gPlayerLogged[params[0]] || !gPlayerSpawned[params[0]] ) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок ещё не заспавнился/залогинился!");
 	if(AI[params[0]][aLevel] > AI[playerid][aLevel]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Админ стоит на уровень выше вас{FF0000}! {FFFFFF}Невозможно{FF0000}!");
 	new Float:X, Float:Y, Float:Z;
 	GetPlayerPos(params[0], X, Y, Z);

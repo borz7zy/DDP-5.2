@@ -3,7 +3,7 @@ CMD:setarmor(playerid, params[]){
 	if(sscanf(params, "dd", params[0], params[1])) return SendClientMessage(playerid, COLOR_VIOLET, "USE: {FFFFFF}/armor [id] [health]");
 	if(!IsPlayerConnected(params[0])) return SendClientMessage(playerid, COLOR_VIOLET,  ""NS" {FFFFFF}Ид игрока не в сети!");
 	if(params[1] < 0 || params[1] > 250) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}От 0 до 250!");
-	if(gPlayerLogged[params[0]] == 0 || gPlayerSpawned[params[0]] == 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок ещё не авторизовался/заспавнился!");
+	if(!gPlayerLogged[params[0]] || !gPlayerSpawned[params[0]]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок ещё не авторизовался/заспавнился!");
 	SetPlayerArmour(params[0], params[1]);
 	new str[256];
 	format(str, sizeof(str), ""NS" {FFFFFF}Админ {CCFF00}%s {FFFFFF}установил игроку {CCFF00}%s {FFFFFF}значение брони - {CCFF00}%d!", PlayerInfo[playerid][pName], PlayerInfo[params[0]][pName], params[1]);

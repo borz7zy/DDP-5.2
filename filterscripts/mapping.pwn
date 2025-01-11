@@ -1,4 +1,4 @@
-#include <a_samp>
+#include <open.mp>
 #include <streamer>
 
 public OnFilterScriptInit()
@@ -21266,7 +21266,7 @@ public OnPlayerConnect(playerid){
 	return 1;
 }
 
-public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
+public OnPlayerGiveDamage(playerid, damagedid, Float:amount, WEAPON:weaponid, bodypart)
 {
 	if(damagedid != INVALID_PLAYER_ID){
 	    //убираем бессмертие

@@ -2,8 +2,8 @@
 //#snippet new_cmd_p CMD:cmd_name(playerid, const params[]) {\n\treturn 1;\n}
 //#snippet new_fpub fpub:func_name(){\n\treturn 1;\n}
 
-#pragma warning disable 213
-#pragma warning disable 234
+// #pragma warning disable 213
+#define MIXED_SPELLINGS
 
 #include <open.mp>
 #include <Pawn.RakNet>
@@ -12,13 +12,13 @@
 //#tryinclude <nex-ac>
 #include <streamer>
 #include <foreach>
-#tryinclude <weapon-config>
+//#tryinclude <weapon-config>
 #include <a_mysql>
 #include <Pawn.CMD>
 #include <mxdate>
 #include <mapandreas>
 
-#pragma dynamic 10400
+#pragma dynamic 65536
 
 #define MAX_GANGS 1000
 
@@ -34,7 +34,7 @@ enum gang_info
     gCDate,
     gPlayers,
     gGlawa[MAX_PLAYER_NAME],
-    gVerifyCapt,
+    bool:gVerifyCapt,
     gLastOneCapt,
     gLastTwoCapt
 }
@@ -707,8 +707,8 @@ new livdop[MAX_PLAYERS];//переменная выключения бессмертия
 new tpdrift[MAX_PLAYERS];//переменная сброса дрифт-очков при ТП
 new minsertimer;//переменная таймера
 new countdown[MAX_PLAYERS];
-new playweap[MAX_PLAYERS][13];//массив оружия
-new playammo[MAX_PLAYERS][13];//массив количества патронов
+new WEAPON:playweap[MAX_PLAYERS][WEAPON_SLOT:13];//массив оружия
+new playammo[MAX_PLAYERS][WEAPON_SLOT:13];//массив количества патронов
 
 enum pTune
 {
@@ -740,7 +740,7 @@ new col4car;//номер случайного цвета при спавне транспорта
 new playcar[MAX_PLAYERS];//ид транспорта игрока
 new bool:gPlayerLogged[MAX_PLAYERS];
 new bool:gPlayerSpawned[MAX_PLAYERS];
-new autorepair[MAX_PLAYERS];
+new bool:autorepair[MAX_PLAYERS];
 
 enum Float:Pos
 {
@@ -799,7 +799,7 @@ enum pInfo
     bool:pAnimLoading
 };
 new PlayerInfo[MAX_PLAYERS][pInfo];
-new gPlayerWeapon[MAX_PLAYERS][26];
+new WEAPON:gPlayerWeapon[MAX_PLAYERS][26];
 new gPlayerLastStateWeapon[MAX_PLAYERS][128];
 
 new Muted[MAX_PLAYERS];
@@ -1021,7 +1021,7 @@ new HouseInfo[MAX_CREATE_HOUSE][lHouseInfo];
 
 new driftexp[MAX_PLAYERS];
 
-new SpawnTextDraw[MAX_PLAYERS][sizeof(playspax)];
+new PlayerText3D:SpawnTextDraw[MAX_PLAYERS][sizeof(playspax)];
 
 /////////////Для работ
 /*
@@ -1095,8 +1095,8 @@ new Duel[MAX_PLAYERS],
     UnDuelend[MAX_PLAYERS],
     Duelrounds[MAX_PLAYERS],
     Duelwins[MAX_PLAYERS],
-    Duelweap1[MAX_PLAYERS],
-    Duelweap2[MAX_PLAYERS];
+    WEAPON:Duelweap1[MAX_PLAYERS],
+    WEAPON:Duelweap2[MAX_PLAYERS];
 //DUELSYS
 
 new PlayerText:spec_TD[MAX_PLAYERS];
@@ -1154,7 +1154,7 @@ stock NulledPlayer(playerid)
         MyCarInfo[playerid][i][cTextcar][0] = EOS;
     }
 
-    for (new f; f < 26; f++) gPlayerWeapon[playerid][f] = 0;
+    for (new f; f < 26; f++) gPlayerWeapon[playerid][f] = UNKNOWN_WEAPON;
 
     if (job[playerid] == 2)
     {
@@ -1220,7 +1220,7 @@ stock NulledPlayer(playerid)
     SetPVarInt(playerid, "goodspawn", 0);
     NRadio[playerid] = 0;
     BugTicks[playerid] = 0;
-    autorepair[playerid] = 1;
+    autorepair[playerid] = true;
     dmkills[playerid] = 0;
     dmdeath[playerid] = 0;
     DiceLock[playerid] = 0;
@@ -1230,8 +1230,8 @@ stock NulledPlayer(playerid)
     SetPVarInt(playerid, "FirstCheckNakaz", 0);
     for (new i = 0; i < 13; i++) //обнуление слотов оружия
     {
-        playweap[playerid][i] = 0;
-        playammo[playerid][i] = 0;
+        playweap[playerid][WEAPON_SLOT:i] = UNKNOWN_WEAPON;
+        playammo[playerid][WEAPON_SLOT:i] = 0;
     }
     AI[playerid][aReadPM] = false;
     AI[playerid][aReadCMD] = false;
@@ -1339,31 +1339,31 @@ public OnPlayerEnterDynamicArea(playerid, areaid)
     }
     if (areaid == TrackManiaCheck[0])
     {
-        if (GetPlayerState(playerid) != PLAYER_STATE_DRIVER  && Events[playerid][1] == 1)
+        if (GetPlayerState(playerid) != PLAYER_STATE_DRIVER  && Events[playerid][1])
         {
-            Events[playerid][1] = 0;
+            Events[playerid][1] = false;
             SpawnPlayer(playerid);
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не в транспорте! Награды не будет.");
             return 1;
         }
         if (PlayerInfo[playerid][TrackMania1] > gettime())
         {
-            if (Events[playerid][1] == 1)
+            if (Events[playerid][1])
             {
-                Events[playerid][1] = 0;
+                Events[playerid][1] = false;
                 SpawnPlayer(playerid);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сегодня вы уже получали приз за ТрекМанию1, заходите через сутки!");
             }
         }
         else
         {
-            if (Events[playerid][1] == 1)
+            if (Events[playerid][1])
             {
                 format(str, sizeof(str), ""NS" {CCFF00}%s[%d] {FFFFFF}прошёл Трек Манию 1 и получил приз!", PlayerInfo[playerid][pName], playerid);
                 SendClientMessageToAll(COLOR_VIOLET, str);
                 MoneyK(playerid, 200000);
                 PlayerInfo[playerid][TrackMania1] = gettime() + 1 * 86400;
-                Events[playerid][1] = 0;
+                Events[playerid][1] = false;
                 SpawnPlayer(playerid);
                 mysql_format(ServerDB, str, sizeof(str), "UPDATE `players` SET `TrackMania1`='%d' WHERE `PlayerName`='%e' LIMIT 1", PlayerInfo[playerid][TrackMania1], PlayerInfo[playerid][pName]);
                 mysql_tquery(ServerDB, str, "", "");
@@ -1375,31 +1375,31 @@ public OnPlayerEnterDynamicArea(playerid, areaid)
     }
     if (areaid == TrackManiaCheck[1])
     {
-        if (GetPlayerState(playerid) != PLAYER_STATE_DRIVER  && Events[playerid][2] == 1)
+        if (GetPlayerState(playerid) != PLAYER_STATE_DRIVER  && Events[playerid][2])
         {
-            Events[playerid][1] = 0;
+            Events[playerid][1] = false;
             SpawnPlayer(playerid);
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не в транспорте! Награды не будет.");
             return 1;
         }
         if (PlayerInfo[playerid][TrackMania2] > gettime())
         {
-            if (Events[playerid][2] == 1)
+            if (Events[playerid][2])
             {
-                Events[playerid][2] = 0;
+                Events[playerid][2] = false;
                 SpawnPlayer(playerid);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сегодня вы уже получали приз за ТрекМанию2, заходите через сутки!");
             }
         }
         else
         {
-            if (Events[playerid][2] == 1)
+            if (Events[playerid][2])
             {
                 format(str, sizeof(str), ""NS" {CCFF00}%s[%d] {FFFFFF}прошёл Трек Манию 2 и получил приз!", PlayerInfo[playerid][pName], playerid);
                 SendClientMessageToAll(COLOR_VIOLET, str);
                 MoneyK(playerid, 300000);
                 PlayerInfo[playerid][TrackMania2] = gettime() + 1 * 86400;
-                Events[playerid][2] = 0;
+                Events[playerid][2] = false;
                 SpawnPlayer(playerid);
                 mysql_format(ServerDB, str, sizeof(str), "UPDATE `players` SET `TrackMania2`='%d' WHERE `PlayerName`='%e' LIMIT 1", PlayerInfo[playerid][TrackMania2], PlayerInfo[playerid][pName]);
                 mysql_tquery(ServerDB, str, "", "");
@@ -1411,31 +1411,31 @@ public OnPlayerEnterDynamicArea(playerid, areaid)
     }
     if (areaid == TrackManiaCheck[2])
     {
-        if (GetPlayerState(playerid) != PLAYER_STATE_DRIVER  && Events[playerid][3] == 1)
+        if (GetPlayerState(playerid) != PLAYER_STATE_DRIVER  && Events[playerid][3])
         {
-            Events[playerid][1] = 0;
+            Events[playerid][1] = false;
             SpawnPlayer(playerid);
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не в транспорте! Награды не будет.");
             return 1;
         }
         if (PlayerInfo[playerid][TrackMania3] > gettime())
         {
-            if (Events[playerid][3] == 1)
+            if (Events[playerid][3])
             {
-                Events[playerid][3] = 0;
+                Events[playerid][3] = false;
                 SpawnPlayer(playerid);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сегодня вы уже получали приз за ТрекМанию3, заходите через сутки!");
             }
         }
         else
         {
-            if (Events[playerid][3] == 1)
+            if (Events[playerid][3])
             {
                 format(str, sizeof(str), ""NS" {CCFF00}%s[%d] {FFFFFF}прошёл Трек Манию 3 и получил приз!", PlayerInfo[playerid][pName], playerid);
                 SendClientMessageToAll(COLOR_VIOLET, str);
                 MoneyK(playerid, 400000);
                 PlayerInfo[playerid][TrackMania3] = gettime() + 1 * 86400;
-                Events[playerid][3] = 0;
+                Events[playerid][3] = false;
                 SpawnPlayer(playerid);
                 mysql_format(ServerDB, str, sizeof(str), "UPDATE `players` SET `TrackMania3`='%d' WHERE `PlayerName`='%e' LIMIT 1", PlayerInfo[playerid][TrackMania3], PlayerInfo[playerid][pName]);
                 mysql_tquery(ServerDB, str, "", "");
@@ -1462,9 +1462,9 @@ public OnGameModeInit()
     DisableInteriorEnterExits();//Отключаем стандартные пикапы
     EnableStuntBonusForAll(false);//убираем бонусы за трюки
 
-    SetVehiclePassengerDamage(true);//weapon-config
-    SetDisableSyncBugs(true);		//weapon-config
-    SetCbugAllowed(true);			//weapon-config
+    //SetVehiclePassengerDamage(true);//weapon-config
+    //SetDisableSyncBugs(true);		//weapon-config
+    //SetCbugAllowed(true);			//weapon-config
 
     Streamer_VisibleItems(STREAMER_TYPE_OBJECT, 1000);
 
@@ -1511,42 +1511,42 @@ public OnGameModeInit()
     //////////////////////////////////[ЛОГО]////////////////////////////////////
     logo[0] = TextDrawCreate(87.6505, 427.6026, "~b~vk~w~.~b~com~w~/~b~ddp~w~.~b~samp");
     TextDrawLetterSize(logo[0], 0.2716, 1.3257);
-    TextDrawAlignment(logo[0], 2);
+    TextDrawAlignment(logo[0], TEXT_DRAW_ALIGN_CENTRE);
     TextDrawColor(logo[0], -1);
     TextDrawSetOutline(logo[0], 1);
     TextDrawBackgroundColor(logo[0], 255);
-    TextDrawFont(logo[0], 1);
-    TextDrawSetProportional(logo[0], 1);
+    TextDrawFont(logo[0], TEXT_DRAW_FONT_AHARONI_BOLD);
+    TextDrawSetProportional(logo[0], true);
     TextDrawSetShadow(logo[0], 0);
 
     logo[1]  = TextDrawCreate(576.8977, 6.5333, "Drift");
     TextDrawLetterSize(logo[1], 0.2566, 1.2383);
-    TextDrawAlignment(logo[1], 2);
+    TextDrawAlignment(logo[1], TEXT_DRAW_ALIGN_CENTRE);
     TextDrawColor(logo[1], -1);
     TextDrawSetOutline(logo[1], 1);
     TextDrawBackgroundColor(logo[1], 255);
-    TextDrawFont(logo[1], 2);
-    TextDrawSetProportional(logo[1], 1);
+    TextDrawFont(logo[1], TEXT_DRAW_FONT_BANK_GOTHIC);
+    TextDrawSetProportional(logo[1], true);
     TextDrawSetShadow(logo[1], 0);
 
     logo[2] = TextDrawCreate(576.8977, 15.0333, "Dreams");
     TextDrawLetterSize(logo[2], 0.2566, 1.2383);
-    TextDrawAlignment(logo[2], 2);
+    TextDrawAlignment(logo[2], TEXT_DRAW_ALIGN_CENTRE);
     TextDrawColor(logo[2], -855703297);
     TextDrawSetOutline(logo[2], 1);
     TextDrawBackgroundColor(logo[2], 255);
-    TextDrawFont(logo[2], 2);
-    TextDrawSetProportional(logo[2], 1);
+    TextDrawFont(logo[2], TEXT_DRAW_FONT_BANK_GOTHIC);
+    TextDrawSetProportional(logo[2], true);
     TextDrawSetShadow(logo[2], 0);
 
     logo[3] = TextDrawCreate(576.8977, 23.8334, "Project");
     TextDrawLetterSize(logo[3], 0.2566, 1.2383);
-    TextDrawAlignment(logo[3], 2);
+    TextDrawAlignment(logo[3], TEXT_DRAW_ALIGN_CENTRE);
     TextDrawColor(logo[3], -1892621057);
     TextDrawSetOutline(logo[3], 1);
     TextDrawBackgroundColor(logo[3], 255);
-    TextDrawFont(logo[3], 2);
-    TextDrawSetProportional(logo[3], 1);
+    TextDrawFont(logo[3], TEXT_DRAW_FONT_BANK_GOTHIC);
+    TextDrawSetProportional(logo[3], true);
     TextDrawSetShadow(logo[3], 0);
 
     //////////////////////////////////[ЛОГО]////////////////////////////////////
@@ -1579,25 +1579,25 @@ public OnGameModeInit()
     Pricep[8] = AddStaticVehicleEx(591, -176.4197, -275.9543, 2.0382, 90.0000, -1, -1, 600000); // Прицеп № 9
     Pricep[9] = AddStaticVehicleEx(584, -163.5643, -246.5026, 2.4560, 90.0000, -1, -1, 600000); // Прицеп № 10
 
-    Pricep3dtext[0] = Create3DTextLabel("« {CCFF00}Вооружение {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[0] = Create3DTextLabel("« {CCFF00}Вооружение {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[0], Pricep[0], 0.0, 0.0, 0.0);
-    Pricep3dtext[1] = Create3DTextLabel("« {CCFF00}Алкоголь {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[1] = Create3DTextLabel("« {CCFF00}Алкоголь {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[1], Pricep[1], 0.0, 0.0, 0.0);
-    Pricep3dtext[2] = Create3DTextLabel("« {CCFF00}Одежда {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[2] = Create3DTextLabel("« {CCFF00}Одежда {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[2], Pricep[2], 0.0, 0.0, 0.0);
-    Pricep3dtext[3] = Create3DTextLabel("« {CCFF00}Топливо {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[3] = Create3DTextLabel("« {CCFF00}Топливо {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[3], Pricep[3], 0.0, 0.0, 0.0);
-    Pricep3dtext[4] = Create3DTextLabel("« {CCFF00}Овощи {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[4] = Create3DTextLabel("« {CCFF00}Овощи {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[4], Pricep[4], 0.0, 0.0, 0.0);
-    Pricep3dtext[5] = Create3DTextLabel("« {CCFF00}Щебень {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[5] = Create3DTextLabel("« {CCFF00}Щебень {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[5], Pricep[5], 0.0, 0.0, 0.0);
-    Pricep3dtext[6] = Create3DTextLabel("« {CCFF00}Песок {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[6] = Create3DTextLabel("« {CCFF00}Песок {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[6], Pricep[6], 0.0, 0.0, 0.0);
-    Pricep3dtext[7] = Create3DTextLabel("« {CCFF00}Известь {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[7] = Create3DTextLabel("« {CCFF00}Известь {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[7], Pricep[7], 0.0, 0.0, 0.0);
-    Pricep3dtext[8] = Create3DTextLabel("« {CCFF00}Фрукты {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[8] = Create3DTextLabel("« {CCFF00}Фрукты {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[8], Pricep[8], 0.0, 0.0, 0.0);
-    Pricep3dtext[9] = Create3DTextLabel("« {CCFF00}Нефть {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, 1);
+    Pricep3dtext[9] = Create3DTextLabel("« {CCFF00}Нефть {8F30E4}»", COLOR_VIOLET, 0.0, 0.0, -100.0, 50.0, 0, true);
     Attach3DTextLabelToVehicle(Pricep3dtext[9], Pricep[9], 0.0, 0.0, 0.0);
 
     drifttimer = SetTimer("Drift", 200, true);//drift bonus
@@ -1650,78 +1650,78 @@ public OnGameModeInit()
 
     skins_TD[0] = TextDrawCreate(353.9905, 401.7001, "LD_SPAC:white");
     TextDrawTextSize(skins_TD[0], 64.0000, 16.0000);
-    TextDrawAlignment(skins_TD[0], 1);
+    TextDrawAlignment(skins_TD[0], TEXT_DRAW_ALIGN_LEFT);
     TextDrawColor(skins_TD[0], -1892621212);
     TextDrawBackgroundColor(skins_TD[0], 255);
-    TextDrawFont(skins_TD[0], 4);
-    TextDrawSetProportional(skins_TD[0], 0);
+    TextDrawFont(skins_TD[0], TEXT_DRAW_FONT_SPRITE);
+    TextDrawSetProportional(skins_TD[0], false);
     TextDrawSetShadow(skins_TD[0], 0);
 
     skins_TD[1] = TextDrawCreate(220.0000, 400.0000, "LD_SPAC:white");
     TextDrawTextSize(skins_TD[1], 200.0000, 20.0000);
-    TextDrawAlignment(skins_TD[1], 1);
+    TextDrawAlignment(skins_TD[1], TEXT_DRAW_ALIGN_LEFT);
     TextDrawColor(skins_TD[1], 80);
     TextDrawBackgroundColor(skins_TD[1], 255);
-    TextDrawFont(skins_TD[1], 4);
-    TextDrawSetProportional(skins_TD[1], 0);
+    TextDrawFont(skins_TD[1], TEXT_DRAW_FONT_SPRITE);
+    TextDrawSetProportional(skins_TD[1], false);
     TextDrawSetShadow(skins_TD[1], 0);
 
     skins_TD[2] = TextDrawCreate(222.0151, 401.7001, "LD_SPAC:white");
     TextDrawTextSize(skins_TD[2], 64.0000, 16.0000);
-    TextDrawAlignment(skins_TD[2], 1);
+    TextDrawAlignment(skins_TD[2], TEXT_DRAW_ALIGN_LEFT);
     TextDrawColor(skins_TD[2], -1892621212);
     TextDrawBackgroundColor(skins_TD[2], 255);
-    TextDrawFont(skins_TD[2], 4);
-    TextDrawSetProportional(skins_TD[2], 0);
+    TextDrawFont(skins_TD[2], TEXT_DRAW_FONT_SPRITE);
+    TextDrawSetProportional(skins_TD[2], false);
     TextDrawSetShadow(skins_TD[2], 0);
 
     skins_TD[3] = TextDrawCreate(288.1084, 401.7001, "LD_SPAC:white");
     TextDrawTextSize(skins_TD[3], 64.0000, 16.0000);
-    TextDrawAlignment(skins_TD[3], 1);
+    TextDrawAlignment(skins_TD[3], TEXT_DRAW_ALIGN_LEFT);
     TextDrawColor(skins_TD[3], -1892621212);
     TextDrawBackgroundColor(skins_TD[3], 255);
-    TextDrawFont(skins_TD[3], 4);
-    TextDrawSetProportional(skins_TD[3], 0);
+    TextDrawFont(skins_TD[3], TEXT_DRAW_FONT_SPRITE);
+    TextDrawSetProportional(skins_TD[3], false);
     TextDrawSetShadow(skins_TD[3], 0);
 
     skins_TD[4] = TextDrawCreate(253.0867, 402.1500, "<<<<<");
     TextDrawLetterSize(skins_TD[4], 0.3686, 1.6000);
-    TextDrawAlignment(skins_TD[4], 2);
+    TextDrawAlignment(skins_TD[4], TEXT_DRAW_ALIGN_CENTRE);
     TextDrawColor(skins_TD[4], -855703297);
     TextDrawSetOutline(skins_TD[4], 1);
     TextDrawBackgroundColor(skins_TD[4], 255);
-    TextDrawFont(skins_TD[4], 1);
-    TextDrawSetProportional(skins_TD[4], 1);
+    TextDrawFont(skins_TD[4], TEXT_DRAW_FONT_AHARONI_BOLD);
+    TextDrawSetProportional(skins_TD[4], true);
     TextDrawSetShadow(skins_TD[4], 0);
-    TextDrawUseBox(skins_TD[4], 1);
+    TextDrawUseBox(skins_TD[4], true);
     TextDrawBoxColor(skins_TD[4], 0x00000000);
     TextDrawTextSize(skins_TD[4], 13.0000, 54.0000);
     TextDrawSetSelectable(skins_TD[4], true);
 
     skins_TD[5] = TextDrawCreate(320.0855, 402.1500, "SPAWN");
     TextDrawLetterSize(skins_TD[5], 0.3568, 1.4658);
-    TextDrawAlignment(skins_TD[5], 2);
+    TextDrawAlignment(skins_TD[5], TEXT_DRAW_ALIGN_CENTRE);
     TextDrawColor(skins_TD[5], -855703297);
     TextDrawSetOutline(skins_TD[5], 1);
     TextDrawBackgroundColor(skins_TD[5], 255);
-    TextDrawFont(skins_TD[5], 2);
-    TextDrawSetProportional(skins_TD[5], 1);
+    TextDrawFont(skins_TD[5], TEXT_DRAW_FONT_BANK_GOTHIC);
+    TextDrawSetProportional(skins_TD[5], true);
     TextDrawSetShadow(skins_TD[5], 0);
-    TextDrawUseBox(skins_TD[5], 1);
+    TextDrawUseBox(skins_TD[5], true);
     TextDrawBoxColor(skins_TD[5], 0x00000000);
     TextDrawTextSize(skins_TD[5], 13.0000, 54.0000);
     TextDrawSetSelectable(skins_TD[5], true);
 
     skins_TD[6] = TextDrawCreate(385.2100, 402.1500, ">>>>>");
     TextDrawLetterSize(skins_TD[6], 0.3686, 1.6000);
-    TextDrawAlignment(skins_TD[6], 2);
+    TextDrawAlignment(skins_TD[6], TEXT_DRAW_ALIGN_CENTRE);
     TextDrawColor(skins_TD[6], -855703297);
     TextDrawSetOutline(skins_TD[6], 1);
     TextDrawBackgroundColor(skins_TD[6], 255);
-    TextDrawFont(skins_TD[6], 1);
-    TextDrawSetProportional(skins_TD[6], 1);
+    TextDrawFont(skins_TD[6], TEXT_DRAW_FONT_AHARONI_BOLD);
+    TextDrawSetProportional(skins_TD[6], true);
     TextDrawSetShadow(skins_TD[6], 0);
-    TextDrawUseBox(skins_TD[6], 1);
+    TextDrawUseBox(skins_TD[6], true);
     TextDrawBoxColor(skins_TD[6], 0x00000000);
     TextDrawTextSize(skins_TD[6], 13.0000, 54.0000);
     TextDrawSetSelectable(skins_TD[6], true);
@@ -1729,7 +1729,7 @@ public OnGameModeInit()
     MapAndreas_Init(MAP_ANDREAS_MODE_FULL, "scriptfiles/SAFull.hmap");
 
     new randspawn = random(sizeof(playspax));
-    AddPlayerClass(0, playspax[randspawn], playspay[randspawn], playspaz[randspawn], 0, 0, 0, 0, 0, 0, 0);
+    AddPlayerClass(0, playspax[randspawn], playspay[randspawn], playspaz[randspawn], 0.0000);
 
     printf("Игровой мод загружен. Потрачено на загрузку: %i ms.", GetTickCount() - timeloadmode);
     SendRconCommand("password 0");
@@ -1780,10 +1780,10 @@ new ipdetected[MAX_PLAYERS] = {0};
 public OnPlayerConnect(playerid)
 {
     NulledPlayer(playerid);
-    Events[playerid][0] = 0; //лабиринт
-    Events[playerid][1] = 0; //трекмании
-    Events[playerid][2] = 0;
-    Events[playerid][3] = 0;
+    Events[playerid][0] = false; //лабиринт
+    Events[playerid][1] = false; //трекмании
+    Events[playerid][2] = false;
+    Events[playerid][3] = false;
 
     GetPlayerName(playerid, PlayerInfo[playerid][pName], MAX_PLAYER_NAME);
 
@@ -1798,18 +1798,18 @@ public OnPlayerConnect(playerid)
 
     VehicleSpeed[playerid] = CreatePlayerTextDraw(playerid, 553.9774, 101.6499, "174KM/4");
     PlayerTextDrawLetterSize(playerid, VehicleSpeed[playerid], 0.2746, 2.2358);
-    PlayerTextDrawAlignment(playerid, VehicleSpeed[playerid], 3);
+    PlayerTextDrawAlignment(playerid, VehicleSpeed[playerid], TEXT_DRAW_ALIGN_RIGHT);
     PlayerTextDrawColor(playerid, VehicleSpeed[playerid], -1);
     PlayerTextDrawSetShadow(playerid, VehicleSpeed[playerid], 0);
     PlayerTextDrawSetOutline(playerid, VehicleSpeed[playerid], 1);
     PlayerTextDrawBackgroundColor(playerid, VehicleSpeed[playerid], 255);
-    PlayerTextDrawFont(playerid, VehicleSpeed[playerid], 2);
+    PlayerTextDrawFont(playerid, VehicleSpeed[playerid], TEXT_DRAW_FONT_BANK_GOTHIC);
     PlayerTextDrawSetProportional(playerid, VehicleSpeed[playerid], true);
 
     HMS44[playerid] = CreatePlayerTextDraw(playerid, 522.8578, 113.0999, "_"); //создаём текстдрав максимальной горизонтальной скорости
-    PlayerTextDrawAlignment(playerid, HMS44[playerid], 1);
+    PlayerTextDrawAlignment(playerid, HMS44[playerid], TEXT_DRAW_ALIGN_LEFT);
     PlayerTextDrawBackgroundColor(playerid, HMS44[playerid], 255);
-    PlayerTextDrawFont(playerid, HMS44[playerid], 2);
+    PlayerTextDrawFont(playerid, HMS44[playerid], TEXT_DRAW_FONT_BANK_GOTHIC);
     PlayerTextDrawLetterSize(playerid, HMS44[playerid], 0.2421, 1.5008);
     PlayerTextDrawColor(playerid, HMS44[playerid], -1);
     PlayerTextDrawSetOutline(playerid, HMS44[playerid], 1);
@@ -1818,32 +1818,32 @@ public OnPlayerConnect(playerid)
 
     spec_TD[playerid] = CreatePlayerTextDraw(playerid, 547.5556, 99.9832, "~b~Speed: ~y~246");
     PlayerTextDrawLetterSize(playerid, spec_TD[playerid], 0.2421, 1.5008);
-    PlayerTextDrawAlignment(playerid, spec_TD[playerid], 1);
+    PlayerTextDrawAlignment(playerid, spec_TD[playerid], TEXT_DRAW_ALIGN_LEFT);
     PlayerTextDrawColor(playerid, spec_TD[playerid], -1);
     PlayerTextDrawSetOutline(playerid, spec_TD[playerid], 1);
     PlayerTextDrawBackgroundColor(playerid, spec_TD[playerid], 255);
-    PlayerTextDrawFont(playerid, spec_TD[playerid], 2);
-    PlayerTextDrawSetProportional(playerid, spec_TD[playerid], 1);
+    PlayerTextDrawFont(playerid, spec_TD[playerid], TEXT_DRAW_FONT_BANK_GOTHIC);
+    PlayerTextDrawSetProportional(playerid, spec_TD[playerid], true);
     PlayerTextDrawSetShadow(playerid, spec_TD[playerid], 0);
 
     scrscr[playerid][0] = TextDrawCreate(559.7764, 100.1826, "~r~+ ~w~999999 ~g~$");
     TextDrawLetterSize(scrscr[playerid][0], 0.1890, 1.2382);
-    TextDrawAlignment(scrscr[playerid][0], 1);
+    TextDrawAlignment(scrscr[playerid][0], TEXT_DRAW_ALIGN_LEFT);
     TextDrawColor(scrscr[playerid][0], -1);
     TextDrawSetOutline(scrscr[playerid][0], 1);
     TextDrawBackgroundColor(scrscr[playerid][0], 255);
-    TextDrawFont(scrscr[playerid][0], 2);
-    TextDrawSetProportional(scrscr[playerid][0], 1);
+    TextDrawFont(scrscr[playerid][0], TEXT_DRAW_FONT_BANK_GOTHIC);
+    TextDrawSetProportional(scrscr[playerid][0], true);
     TextDrawSetShadow(scrscr[playerid][0], 0);
 
     scrscr[playerid][1] = TextDrawCreate(559.7764, 113.4823, "~r~+ ~w~999 ~y~EXP");
     TextDrawLetterSize(scrscr[playerid][1], 0.1890, 1.2382);
-    TextDrawAlignment(scrscr[playerid][1], 1);
+    TextDrawAlignment(scrscr[playerid][1], TEXT_DRAW_ALIGN_LEFT);
     TextDrawColor(scrscr[playerid][1], -1);
     TextDrawSetOutline(scrscr[playerid][1], 1);
     TextDrawBackgroundColor(scrscr[playerid][1], 255);
-    TextDrawFont(scrscr[playerid][1], 2);
-    TextDrawSetProportional(scrscr[playerid][1], 1);
+    TextDrawFont(scrscr[playerid][1], TEXT_DRAW_FONT_BANK_GOTHIC);
+    TextDrawSetProportional(scrscr[playerid][1], true);
     TextDrawSetShadow(scrscr[playerid][1], 0);
 
     new ip[17];
@@ -2039,10 +2039,10 @@ public OnPlayerDisconnect(playerid, reason)
         mysql_tquery(ServerDB, query, "", "");
     }
 
-    Events[playerid][0] = 0; //лабиринт
-    Events[playerid][1] = 0; //трек мании
-    Events[playerid][2] = 0;
-    Events[playerid][3] = 0;
+    Events[playerid][0] = false; //лабиринт
+    Events[playerid][1] = false; //трек мании
+    Events[playerid][2] = false;
+    Events[playerid][3] = false;
 
     foreach (Player, i)
     {
@@ -2084,10 +2084,10 @@ public OnPlayerDisconnect(playerid, reason)
     Duelbet[playerid] = 0;
     Duel[playerid] = 0;
     Duelrounds[playerid] = 0;
-    Duelweap1[playerid] = 0;
-    Duelweap2[playerid] = 0;
+    Duelweap1[playerid] = UNKNOWN_WEAPON;
+    Duelweap2[playerid] = UNKNOWN_WEAPON;
     //DUELSYS
-    if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
+    // if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
 
 
     AI[playerid][db_ID] = 0;
@@ -2140,7 +2140,7 @@ public OnPlayerDisconnect(playerid, reason)
     TextDrawHideForPlayer(playerid, logo[2]);
     TextDrawHideForPlayer(playerid, logo[3]);
 
-    if (gPlayerLogged[playerid] == 1 && gPlayerSpawned[playerid] == 1) //Если игрок был авторизован (АНТИФЛУД ПРИ АТАКЕ БОТАМИ)
+    if (gPlayerLogged[playerid] && gPlayerSpawned[playerid]) //Если игрок был авторизован (АНТИФЛУД ПРИ АТАКЕ БОТАМИ)
     {
         switch (reason)
         {
@@ -2223,7 +2223,7 @@ public OnPlayerDisconnect(playerid, reason)
 
 PreloadAnimLib(playerid, const animlib[])
 {
-    ApplyAnimation(playerid, animlib, "null", 0.0, 0, 0, 0, 0, 0);
+    ApplyAnimation(playerid, animlib, "null", 0.0, false, false, false, false, 0);
 }
 
 public OnPlayerSpawn(playerid)
@@ -2234,7 +2234,7 @@ public OnPlayerSpawn(playerid)
         TextDrawHideForPlayer(playerid, scrscr[playerid][1]);
         R_Vehicle[playerid] = VehicleSpeed_1;//speedometer
     }
-    if (gPlayerLogged[playerid] == 0)
+    if (!gPlayerLogged[playerid])
     {
         new string[256];
         format(string, 144, ""NS" {FFFFFF}%s был кикнут за обход авторизации!", PlayerInfo[playerid][pName]);
@@ -2285,7 +2285,7 @@ public OnPlayerSpawn(playerid)
         {
             if (PlayerInfo[playerid][pSpawnChange] == 0) //спавн сервера
             {
-                Teleport(playerid, playspax[tpspa], playspay[tpspa], playspaz[tpspa], 0, 0, 0, playspaa[tpspa], false);
+                Teleport(playerid, playspax[tpspa], playspay[tpspa], playspaz[tpspa], 0, 0, false, playspaa[tpspa], false);
             }
             else if (PlayerInfo[playerid][pSpawnChange] == 1) //спавн банды
             {
@@ -2307,9 +2307,11 @@ public OnPlayerSpawn(playerid)
                         PlayerInfo[playerid][pSpawnChange] = 0;
                         SpawnPlayer(playerid);
                     }
-                    if ((GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0] && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2]) != 0)
+                    if (GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0] == 0.0000
+					&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] == 0.0000
+					&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2] == 0.0000)
                     {
-                        Teleport(playerid, GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0], GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1], GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2], 0, 0, 0, 0, false);
+                        Teleport(playerid, GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0], GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1], GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2], 0, 0, false, 0, false);
                     }
                     else
                     {
@@ -2335,7 +2337,7 @@ public OnPlayerSpawn(playerid)
                         {
                             PlayerInfo[playerid][pActionHouseID] = i;
                             //EnterHouse(playerid, i, false);
-                            Teleport(playerid, gHousesSetting[HouseInfo[i][hInt]][g_hCoordX], gHousesSetting[HouseInfo[i][hInt]][g_hCoordY], gHousesSetting[HouseInfo[i][hInt]][g_hCoordZ], HouseInfo[i][hID], gHousesSetting[HouseInfo[i][hInt]][g_hInt], 0, 0, false);
+                            Teleport(playerid, gHousesSetting[HouseInfo[i][hInt]][g_hCoordX], gHousesSetting[HouseInfo[i][hInt]][g_hCoordY], gHousesSetting[HouseInfo[i][hInt]][g_hCoordZ], HouseInfo[i][hID], gHousesSetting[HouseInfo[i][hInt]][g_hInt], false, 0.0000, false);
                             break;
                         }
                         else
@@ -2359,7 +2361,7 @@ public OnPlayerSpawn(playerid)
                     PlayerInfo[playerid][pSpawnChange] = 0;
                     SpawnPlayer(playerid);
                 }
-                else Teleport(playerid, PlayerInfo[playerid][pvsx], PlayerInfo[playerid][pvsy], PlayerInfo[playerid][pvsz], 0, 0, 0, PlayerInfo[playerid][pvsa], false);
+                else Teleport(playerid, PlayerInfo[playerid][pvsx], PlayerInfo[playerid][pvsy], PlayerInfo[playerid][pvsz], 0, 0, false, PlayerInfo[playerid][pvsa], false);
             }
             if (GetPVarInt(playerid, "goodspawnmessage") == 0)
             {
@@ -2373,23 +2375,23 @@ public OnPlayerSpawn(playerid)
                 SetPlayerArmour(playerid, 100);
             }
             ResetPlayerWeapons(playerid);
-            for (new i; i < 13; i++) if (gPlayerWeapon[playerid][i] > 0) GivePlayerWeapon(playerid, gPlayerWeapon[playerid][i], gPlayerWeapon[playerid][i + 13]);
+            for (new i; i < 13; i++) if (gPlayerWeapon[playerid][i] > WEAPON_FIST) GivePlayerWeapon(playerid, gPlayerWeapon[playerid][i], gPlayerWeapon[playerid][i + 13]);
         }
         else if (dmzone[playerid] != 0 && Prison[playerid] <= 0)
         {
             ResetPlayerWeapons(playerid);//отобрать оружие
-            GivePlayerWeapon(playerid, 24, 2000);//заполнение слотов оружия игрока перед DM
+            GivePlayerWeapon(playerid, WEAPON_DEAGLE, 2000);//заполнение слотов оружия игрока перед DM
             switch (dmzone[playerid])
             {
                 case 1:
                 {
-                    Teleport(playerid, DMZONESTELEPORTS[randomzone[0]][0], DMZONESTELEPORTS[randomzone[0]][1], DMZONESTELEPORTS[randomzone[0]][2], 100, 0, 0, DMZONESTELEPORTS[randomzone[0]][3], false); //DM зона 1
-                    if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
+                    Teleport(playerid, DMZONESTELEPORTS[randomzone[0]][0], DMZONESTELEPORTS[randomzone[0]][1], DMZONESTELEPORTS[randomzone[0]][2], 100, 0, false, DMZONESTELEPORTS[randomzone[0]][3], false); //DM зона 1
+                    // if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
                 }
                 case 2:
                 {
-                    Teleport(playerid, DMZONESTELEPORTS[randomzone[1]][0], DMZONESTELEPORTS[randomzone[1]][1], DMZONESTELEPORTS[randomzone[1]][2], 101, 0, 0, DMZONESTELEPORTS[randomzone[1]][3], false); //DM зона 2
-                    if (GetCbugAllowed(playerid))SetCbugAllowed(false, playerid);
+                    Teleport(playerid, DMZONESTELEPORTS[randomzone[1]][0], DMZONESTELEPORTS[randomzone[1]][1], DMZONESTELEPORTS[randomzone[1]][2], 101, 0, false, DMZONESTELEPORTS[randomzone[1]][3], false); //DM зона 2
+                    // if (GetCbugAllowed(playerid))SetCbugAllowed(false, playerid);
                 }
             }
         }
@@ -2404,7 +2406,7 @@ public OnPlayerSpawn(playerid)
         //DUELSYS
         if (Prison[playerid] > gettime())
         {
-            Teleport(playerid, 1104.6355, 1098.7548, 1098.0000, 0, 0, 0, 88.7659, false);
+            Teleport(playerid, 1104.6355, 1098.7548, 1098.0000, 0, 0, false, 88.7659, false);
             prisontimer[playerid] = SetTimerEx("CheckPrison", 5000, false, "i", playerid);
             return 1;
         }
@@ -2432,7 +2434,7 @@ public OnPlayerSpawn(playerid)
             selectskin[playerid] = 9;
             SetPlayerSkin(playerid, 9);
         }
-        TogglePlayerControllable(playerid, 0);
+        TogglePlayerControllable(playerid, false);
         SetPlayerPos(playerid, 1097.2878, -820.6286, 1084.0475);
         SetPlayerFacingAngle(playerid, 184.2114);
         SetPlayerInterior(playerid, 0);
@@ -2577,7 +2579,7 @@ chskin_gotos2:
         TextDrawHideForPlayer(playerid, skins_TD[5]);
         CancelSelectTextDraw(playerid);
         SpawnPlayer(playerid);
-        TogglePlayerControllable(playerid, 1);
+        TogglePlayerControllable(playerid, true);
         PlayerPlaySound(playerid, 36401, 0.0, 0.0, 10.0);
         return 1;
     }
@@ -2616,7 +2618,7 @@ fpub:DeathEndPrison(playerid)
     return 1;
 }
 
-public OnPlayerDeath(playerid, killerid, reason)
+public OnPlayerDeath(playerid, killerid, WEAPON:reason)
 {
     new string[256];
 
@@ -2639,9 +2641,9 @@ public OnPlayerDeath(playerid, killerid, reason)
     }
     R_Vehicle[playerid] = VehicleSpeed_1;//speedometer
     SendDeathMessage(killerid, playerid, reason);
-    if ((Events[playerid][0] || Events[playerid][1] || Events[playerid][2] || Events[playerid][3]) != 0) //при смерти на евентах АБНУЛЯИМСЯ)))
+    if (!(Events[playerid][0] || Events[playerid][1] || Events[playerid][2] || Events[playerid][3])) //при смерти на евентах АБНУЛЯИМСЯ)))
     {
-        Events[playerid][0] = 0;
+        Events[playerid][0] = false;
     }
     if (Checkpoint[playerid] == 1) //дальнобойщик
     {
@@ -2853,7 +2855,7 @@ public OnVehicleSpawn(vehicleid)
 
 stock OnPlayerSave(playerid)
 {
-    if (gPlayerLogged[playerid] == 1)
+    if (gPlayerLogged[playerid])
     {
         new str[4096];
 
@@ -2893,7 +2895,7 @@ public OnPlayerText(playerid, text[])
     {
         return 0;
     }
-    if (gPlayerSpawned[playerid] == 0) //игрок НЕ заспавнился
+    if (!gPlayerSpawned[playerid]) //игрок НЕ заспавнился
     {
         printf("-----[Игрок не заспавнился] %s [%d]: %s", PlayerInfo[playerid][pName], playerid, text); // Отправляем сообщение в сервер-лог
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для начала заспавнись!");
@@ -2921,7 +2923,7 @@ public OnPlayerText(playerid, text[])
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не в сети!");
             return 0;
         }
-        if (gPlayerSpawned[id] == 0)
+        if (!gPlayerSpawned[id])
         {
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не заспавнился!");
             return 0;
@@ -2932,7 +2934,7 @@ public OnPlayerText(playerid, text[])
 
     if (PlayerInfo[playerid][pGang] == 0)
     {
-        if (gPlayerSpawned[playerid] == 1) //игрок УЖЕ заспавнился
+        if (gPlayerSpawned[playerid]) //игрок УЖЕ заспавнился
         {
             if (PlayerInfo[playerid][pVIP] == 0)format(string, sizeof(string), ""MNS" %s[%d]: {FFFFFF}%s", PlayerInfo[playerid][pName], playerid, text);
             else format(string, sizeof(string), ""MNS" %s[%d]{00FFFF}VIP: {FFFFFF}%s", PlayerInfo[playerid][pName], playerid, text);
@@ -2943,7 +2945,7 @@ public OnPlayerText(playerid, text[])
     }
     else
     {
-        if (gPlayerSpawned[playerid] == 1) //игрок УЖЕ заспавнился
+        if (gPlayerSpawned[playerid]) //игрок УЖЕ заспавнился
         {
             if (PlayerInfo[playerid][pVIP] == 0)format(string, sizeof(string), "%s %s[%d]: {FFFFFF}%s", GangInfo[PlayerInfo[playerid][pGang]][gName], PlayerInfo[playerid][pName], playerid, text);
             else format(string, sizeof(string), "%s %s[%d]{00FFFF}VIP: {FFFFFF}%s", GangInfo[PlayerInfo[playerid][pGang]][gName], PlayerInfo[playerid][pName], playerid, text);
@@ -3001,16 +3003,18 @@ public OnPlayerCommandText(playerid, cmdtext[])
     	}*/
     if (strcmp(cmd, "/exit", true) == 0)
     {
-        if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
-        if ((Events[playerid][0] || Events[playerid][1] || Events[playerid][2] || Events[playerid][3]) != 1) return 1;
-        if (Events[playerid][0] == 1) Events[playerid][0] = 0;
-        else if (Events[playerid][1] == 1) Events[playerid][1] = 0;
-        else if (Events[playerid][2] == 1) Events[playerid][2] = 0;
-        else if (Events[playerid][3] == 1) Events[playerid][3] = 0;
+        if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID)
+			return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
+        if (!(Events[playerid][0] || Events[playerid][1] || Events[playerid][2] || Events[playerid][3]))
+			return 1;
+        if (Events[playerid][0]) Events[playerid][0] = false;
+        else if (Events[playerid][1]) Events[playerid][1] = false;
+        else if (Events[playerid][2]) Events[playerid][2] = false;
+        else if (Events[playerid][3]) Events[playerid][3] = false;
         SpawnPlayer(playerid);
         return 1;
     }
-    if (Events[playerid][0] == 1)
+    if (Events[playerid][0])
     {
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не можете писать команды, вы находитесь в лабиринте!");
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Если хотите выйти с паркура, пропишите {CCFF00}/exit");
@@ -3018,15 +3022,17 @@ public OnPlayerCommandText(playerid, cmdtext[])
     }
     if (strcmp(cmd, "/restart", true) == 0)
     {
-        if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
-        if ((Events[playerid][1] || Events[playerid][2] || Events[playerid][3]) != 1) return 1;
-        if (Events[playerid][1] == 1) Teleport(playerid, 4476.1670, -2928.5520, 6.3952, 200, 0, 1, 180, false);
-        else if (Events[playerid][2] == 1) Teleport(playerid, -824.2225, 5745.5137, 16.3740, 200, 0, 1, 0, false);
-        else if (Events[playerid][3] == 1) Teleport(playerid, 2414.5239, 4172.3516, 54.1008, 200, 0, 1, 0, false);
+        if(AI[playerid][aSpectateID] != INVALID_PLAYER_ID)
+			return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
+        if(!(Events[playerid][1] || Events[playerid][2] || Events[playerid][3]))
+			return 1;
+        if(Events[playerid][1]) Teleport(playerid, 4476.1670, -2928.5520, 6.3952, 200, 0, true, 180, false);
+        else if(Events[playerid][2]) Teleport(playerid, -824.2225, 5745.5137, 16.3740, 200, 0, true, 0, false);
+        else if(Events[playerid][3]) Teleport(playerid, 2414.5239, 4172.3516, 54.1008, 200, 0, true, 0, false);
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы отправились в самое начало!");
         return 1;
     }
-    if ((Events[playerid][1] || Events[playerid][2] || Events[playerid][3]) == 1)
+    if ((Events[playerid][1] || Events[playerid][2] || Events[playerid][3]))
     {
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не можете писать команды, вы находитесь на трек мании!");
@@ -3035,7 +3041,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
         return 1;
     }
 
-    if (strcmp(cmd, "/help", true) == 0 && gPlayerSpawned[playerid] == 0) //если игрок НЕ заспавнился
+    if (strcmp(cmd, "/help", true) == 0 && !gPlayerSpawned[playerid]) //если игрок НЕ заспавнился
     {
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
         SendClientMessage(playerid, COLOR_GRAD1, " ----------------------------- Помощь ----------------------------- ");
@@ -3044,7 +3050,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
         SendClientMessage(playerid, COLOR_GRAD1, " ------------------------------------------------------------------------ ");
         return 1;
     }
-    if (strcmp("/spawn", cmdtext, true, 10) == 0 && gPlayerSpawned[playerid] == 0)
+    if (strcmp("/spawn", cmdtext, true, 10) == 0 && !gPlayerSpawned[playerid])
     {
         if (Prison[playerid] > gettime()) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В тюрьме недоступно!");
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
@@ -3052,7 +3058,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
         SpawnPlayer(playerid);
         return 1;
     }
-    if (gPlayerSpawned[playerid] == 0)
+    if (!gPlayerSpawned[playerid])
     {
         printf("-----[Игрок не заспавнился] %s [%d]: ввёл команду %s .", PlayerInfo[playerid][pName], playerid, cmdtext); // Отправляем команду в сервер-лог
         SendClientMessage(playerid, COLOR_RED, " Вы ещё не заспавнились ! введите команду /help !");
@@ -3242,9 +3248,8 @@ sh_gotos:
         format(string, sizeof(string), ""NS" {FFFFFF}Игрок %s [%d] запустил отсчёт от %d секунд.", PlayerInfo[playerid][pName], playerid, sec);
         print(string);
         SendClientMessageToAll(COLOR_VIOLET, string);
-new Float:
-X, Float:Y, Float:
-        Z, playint, playvw;
+
+		new Float:X, Float:Y, Float:Z, playint, playvw;
         GetPlayerPos(playerid, X, Y, Z);
         playint = GetPlayerInterior(playerid);
         playvw = GetPlayerVirtualWorld(playerid);
@@ -3271,7 +3276,7 @@ X, Float:Y, Float:
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В системе ДМ эта команда не работает! Для выходя с дм введите {CCFF00}/dmexit");
             return 1;
         }
-        if (Events[playerid][0] == 1)
+        if (Events[playerid][0])
         {
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Меню недоступно в лабиринте! Для выхода с него введите {CCFF00}/exit");
             return 1;
@@ -3341,7 +3346,7 @@ X, Float:Y, Float:
                 return 1;
             }
             SetPlayerVirtualWorld(playerid, dtw);
-            if (GetPlayerState(playerid) == 2)
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
             {
                 //если игрок на месте водителя, то:
                 new carpl;
@@ -3376,7 +3381,7 @@ X, Float:Y, Float:
                 return 1;
             }
             SetPlayerVirtualWorld(playerid, dtw);
-            if (GetPlayerState(playerid) == 2)
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
             {
                 //если игрок на месте водителя, то:
                 new carpl;
@@ -3606,9 +3611,8 @@ X, Float:Y, Float:
         }
         format(string, sizeof(string), ""NS" {CCFF00}Игрок %s [%d] запустил DM-отсчёт от %d секунд.", PlayerInfo[playerid][pName], playerid, sec);
         print(string);
-new Float:
-X, Float:Y, Float:
-        Z, playint, playvw;
+
+		new Float:X, Float:Y, Float:Z, playint, playvw;
         GetPlayerPos(playerid, X, Y, Z);
         playint = GetPlayerInterior(playerid);
         playvw = GetPlayerVirtualWorld(playerid);
@@ -3637,7 +3641,7 @@ X, Float:Y, Float:
         SendClientMessage(playerid, COLOR_GREY, string);
         return 1;
     }
-    if (strcmp("/spawn", cmdtext, true, 10) == 0 && gPlayerSpawned[playerid] == 1)
+    if (strcmp("/spawn", cmdtext, true, 10) == 0 && gPlayerSpawned[playerid])
     {
         if (Prison[playerid] > gettime()) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В тюрьме недоступно!");
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
@@ -3735,7 +3739,7 @@ fpub:EndPojar(playerid, carid)
     return 1;
 }
 
-public OnPlayerStateChange(playerid, newstate, oldstate)
+public OnPlayerStateChange(playerid, PLAYER_STATE:newstate, PLAYER_STATE:oldstate)
 {
     new string[64];
     if (newstate == PLAYER_STATE_DRIVER) //speedometer
@@ -3822,7 +3826,7 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
         }
     }
 
-    if (newstate == 3)
+    if (newstate == PLAYER_STATE_PASSENGER)
     {
         foreach (Player, i)
         {
@@ -3875,14 +3879,14 @@ public OnPlayerEnterCheckpoint(playerid)
         {
             MeshokUp[playerid] = true;
             SetPlayerAttachedObject(playerid, 2, 2060, 5, 0.01, 0.1, 0.2, 100, 10, 85);
-            ApplyAnimation(playerid, "CARRY", "crry_prtial", 4.1, 0, 1, 1, 1, 1);
+            ApplyAnimation(playerid, "CARRY", "crry_prtial", 4.1, false, true, true, true, 1);
             SetPlayerCheckpoint(playerid, Gruz4ikCords[5][0], Gruz4ikCords[5][1], Gruz4ikCords[5][2], 2.0);
         }
     }
     if (PlayerToPoint(2.0, playerid, Gruz4ikCords[5][0], Gruz4ikCords[5][1], Gruz4ikCords[5][2]))
     {
         MeshokUp[playerid] = false;
-        ApplyAnimation(playerid, "PED", "IDLE_tired", 4.1, 0, 1, 1, 0, 1);
+        ApplyAnimation(playerid, "PED", "IDLE_tired", 4.1, false, true, true, false, 1);
         indexMeshok[playerid]++;
         if (IsPlayerAttachedObjectSlotUsed(playerid, 2)) RemovePlayerAttachedObject(playerid, 2);
         new randomCheck = random(5);
@@ -3908,7 +3912,7 @@ public OnPlayerEnterCheckpoint(playerid)
             return 1;
         }
         DisablePlayerCheckpoint(playerid);
-        TogglePlayerControllable(playerid, 0);
+        TogglePlayerControllable(playerid, false);
         SendClientMessage(playerid, COLOR_VIOLET, "[ДАЛЬНОБОЙЩИК]:{FFFF00} Подождите какое-то время, пока разгрузят фуру!");
         SetTimerEx("RazgruzFurui", 15000, false, "i", playerid);
     }
@@ -3947,7 +3951,7 @@ public OnPlayerEnterCheckpoint(playerid)
 
 fpub:RazgruzFurui(playerid)
 {
-    TogglePlayerControllable(playerid, 1);
+    TogglePlayerControllable(playerid, true);
     SendClientMessage(playerid, COLOR_VIOLET, "[ДАЛЬНОБОЙЩИК]:{CCFF00} Разгрузка фуры завершена...");
     SendClientMessage(playerid, COLOR_VIOLET, "[ДАЛЬНОБОЙЩИК]:{FFFFFF} Верните прицеп обратно где взяли, там же вам выдадут зарплату за рейс");
     Checkpoint[playerid] = 2;
@@ -4001,37 +4005,37 @@ public OnPlayerPickUpPickup(playerid, pickupid)
 {
     if (pickupid == drak)
     {
-        Teleport(playerid, 2016.1156, 1017.1541, 996.8750, 0, 10, 0, 0, false);
+        Teleport(playerid, 2016.1156, 1017.1541, 996.8750, 0, 10, false, 0, false);
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Вы вошли в Казино 4 дракона!");
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}На данный момент у нас доступна игры Кости, введите {FFFFFF}/dice [ID игрока] [сумма ставки]");
     }
     if (pickupid == drak_exit)
     {
-        Teleport(playerid, 2024.6577, 1007.5568, 10.820, 0, 0, 0, 0, false);
+        Teleport(playerid, 2024.6577, 1007.5568, 10.820, 0, 0, false, 0, false);
     }
     if (pickupid == police)
     {
-        Teleport(playerid, 246.783996, 63.900199, 1003.640625, 0, 6, 0, 0, false);
+        Teleport(playerid, 246.783996, 63.900199, 1003.640625, 0, 6, false, 0, false);
     }
     if (pickupid == police_exit)
     {
-        Teleport(playerid, 1552.8809, -1675.0687, 16.1953, 0, 0, 0, 0, false);
+        Teleport(playerid, 1552.8809, -1675.0687, 16.1953, 0, 0, false, 0, false);
     }
     if (pickupid == juzzi) //в джизи
     {
-        Teleport(playerid, -2640.762939, 1406.682006, 906.460937, 0, 3, 0, 0, false);
+        Teleport(playerid, -2640.762939, 1406.682006, 906.460937, 0, 3, false, 0, false);
     }
     if (pickupid == juzzi_exit) //из джизи
     {
-        Teleport(playerid, -2624.3772, 1409.6277, 7.0938, 0, 0, 0, 0, false);
+        Teleport(playerid, -2624.3772, 1409.6277, 7.0938, 0, 0, false, 0, false);
     }
     if (pickupid == mayak[0]) //На маяк
     {
-        Teleport(playerid, 156.7651, -1951.8878, 47.8750, 0, 0, 0, 0, false);
+        Teleport(playerid, 156.7651, -1951.8878, 47.8750, 0, 0, false, 0, false);
     }
     if (pickupid == mayak[1]) //С маяка
     {
-        Teleport(playerid, 154.1349, -1943.0841, 3.7734, 0, 0, 0, 0, false);
+        Teleport(playerid, 154.1349, -1943.0841, 3.7734, 0, 0, false, 0, false);
     }
 
     if (pickupid == MoneyBagPickup) //Закладки
@@ -4050,7 +4054,7 @@ public OnPlayerPickUpPickup(playerid, pickupid)
                 new timemute = gettime() + (60 * 5);
                 mysql_format(ServerDB, string, sizeof(string), "INSERT INTO `prisonlist` (`IDDB`, `getprison`, `endprison`, `admin`, `reason`, `leavetime`) VALUES ('%d','%d','%d','SYSTEM','Спалился с закладкой','0')", PlayerInfo[playerid][pMID], gettime(), timemute);
                 mysql_tquery(ServerDB, string, "", "");
-                Teleport(playerid, 1104.6355, 1098.7548, 1098.0000, 0, 0, 0, 88.7659, true);
+                Teleport(playerid, 1104.6355, 1098.7548, 1098.0000, 0, 0, false, 88.7659, true);
                 prisontimer[playerid] = SetTimerEx("CheckPrison", 5000, false, "i", playerid);
                 ResetPlayerWeapons(playerid);
 
@@ -4075,7 +4079,7 @@ public OnPlayerPickUpPickup(playerid, pickupid)
                 SendClientMessageToAll(COLOR_VIOLET, string);
                 DestroyPickup(MoneyBagPickup);
                 MoneyK(playerid, money);
-                ApplyAnimation(playerid, "BOMBER", "BOM_Plant", 4.0, 0, 0, 0, 0, 0);
+                ApplyAnimation(playerid, "BOMBER", "BOM_Plant", 4.0, false, false, false, false, 0);
                 KillTimer(Timer[1]);
                 Timer[1] = SetTimer("MoneyBag", MB_DELAY, true);
                 MoneyBag();
@@ -4117,19 +4121,13 @@ public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
 
 #define HOLDING(%0) ((newkeys & ( %0)) == ( %0))
 
-public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
+public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
 {
     if (HOLDING(KEY_FIRE) && GetPVarInt(playerid, "on_zone") == 1 && GetPVarInt(playerid, "press_fire") == 0)
     {
-new Float:
-        object_x,
-Float:
-        object_y,
-Float:
-        object_z;
-
-        GetObjectPos(object_fire[playerid], object_x, object_y, object_z);
-        if (IsPlayerInRangeOfPoint(playerid, 10.0, object_x, object_y, object_z)) // 10.0 << Радиус можете поменять!
+		new Float:object_x, Float:object_y, Float:object_z;
+		GetObjectPos(object_fire[playerid], object_x, object_y, object_z);
+		if(IsPlayerInRangeOfPoint(playerid, 17.0, object_x, object_y, object_z))
         {
             SetPVarInt(playerid, "press_fire", 1);
         }
@@ -4142,12 +4140,12 @@ Float:
     {
         MeshokUp[playerid] = false;
         if (IsPlayerAttachedObjectSlotUsed(playerid, 2)) RemovePlayerAttachedObject(playerid, 2);
-        ApplyAnimation(playerid, "CARRY", "crry_prtial", 4.0, 0, 0, 0, 0, 1, 1);
+        ApplyAnimation(playerid, "CARRY", "crry_prtial", 4.0, false, false, false, false, 1, SYNC_ALL);
         SendClientMessage(playerid, COLOR_RED, "[ГРУЗЧИК]: {FFFFFF}ВЫ УРОНИЛИ МЕШОК{FF0000}! {FFFFFF}Вернитесь за новым{FF0000}.");
         new randomCheck = random(5);
         SetPlayerCheckpoint(playerid, Gruz4ikCords[randomCheck][0], Gruz4ikCords[randomCheck][1], Gruz4ikCords[randomCheck][2], 2.0);
     }
-    if ((newkeys & 1024 && GetPVarInt(playerid, "MnMode") != 2) || (newkeys & 65536 && GetPVarInt(playerid, "MnMode") == 2))
+    if ((newkeys & KEY:1024 && GetPVarInt(playerid, "MnMode") != 2) || (newkeys & KEY:65536 && GetPVarInt(playerid, "MnMode") == 2))
     {
         if (dmzone[playerid] != 0)
         {
@@ -4193,7 +4191,7 @@ Float:
             {
                 if (HouseInfo[i][hID] != pVirt || !IsPlayerInRangeOfPoint(playerid, 1.0, gHousesSetting[HouseInfo[i][hInt]][g_hCoordX], gHousesSetting[HouseInfo[i][hInt]][g_hCoordY], gHousesSetting[HouseInfo[i][hInt]][g_hCoordZ])) continue;
 
-                Teleport(playerid, HouseInfo[i][hEnterCoord][0], HouseInfo[i][hEnterCoord][1], HouseInfo[i][hEnterCoord][2], 0, 0, 0, 0, true);
+                Teleport(playerid, HouseInfo[i][hEnterCoord][0], HouseInfo[i][hEnterCoord][1], HouseInfo[i][hEnterCoord][2], 0, 0, false, 0.0000, true);
                 ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "{CCFF00}>>[ДОМ]<<", "Вы заморожены на 1 секунду!\nЗагрузка объектов!", "OK", "");
                 return 1;
             }
@@ -4236,7 +4234,7 @@ Float:
         {
             if (PlayerInfo[playerid][Labirint1] > gettime())
             {
-                Events[playerid][0] = 0;
+                Events[playerid][0] = false;
                 SpawnPlayer(playerid);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сегодня вы уже получали приз за лабиринт, заходите через сутки!");
             }
@@ -4247,7 +4245,7 @@ Float:
                 SendClientMessageToAll(COLOR_VIOLET, str);
                 MoneyK(playerid, 50000);
                 PlayerInfo[playerid][Labirint1] = gettime() + 1 * 86400;
-                Events[playerid][0] = 0;
+                Events[playerid][0] = false;
                 SpawnPlayer(playerid);
                 mysql_format(ServerDB, str, sizeof(str), "UPDATE `players` SET `Labirint1`='%d' WHERE `PlayerName`='%e' LIMIT 1", PlayerInfo[playerid][Labirint1], PlayerInfo[playerid][pName]);
                 mysql_tquery(ServerDB, str, "", "");
@@ -4258,14 +4256,14 @@ Float:
         }
         PlayerDialogMenu(playerid);
     }
-    if ((newkeys & 512 && GetPVarInt(playerid, "MnMode") != 2) || (newkeys & 65536 && GetPVarInt(playerid, "MnMode") == 2))
+    if ((newkeys & KEY:512 && GetPVarInt(playerid, "MnMode") != 2) || (newkeys & KEY:65536 && GetPVarInt(playerid, "MnMode") == 2))
     {
         if (IsPlayerInAnyVehicle(playerid))
         {
             PlayerDialogMenu(playerid);
         }
     }
-    if (newkeys == 1 || newkeys == 9 || newkeys == 33 && oldkeys != 1 || oldkeys != 9 || oldkeys != 33)
+    if (newkeys == KEY:1 || newkeys == KEY:9 || newkeys == KEY:33 && oldkeys != KEY:1 || oldkeys != KEY:9 || oldkeys != KEY:33)
     {
         new car = GetPlayerVehicleID(playerid);
         new Model5 = GetVehicleModel(car);
@@ -4388,7 +4386,7 @@ fpub:Freeze1sec(playerid)
 fpub:OnPlayerRegistered(playerid, pass[])
 {
     new string[1024];
-    for (new i; i < 26; i++) gPlayerWeapon[playerid][i] = 0;
+    for (new i; i < 26; i++) gPlayerWeapon[playerid][i] = WEAPON_FIST;
     SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Вы успешно зарегистрировались!");
     SetPVarInt(playerid, "PlMon", 50000);
     PlayerInfo[playerid][pDriftExp] = 5;
@@ -4423,7 +4421,6 @@ fpub:OnPlayerLogin(playerid)
         cache_get_value_int(0, "keymenu", dop1);
         cache_get_value_int(0, "Skin", PlayerInfo[playerid][pSkin]);
         SetPVarInt(playerid, "MnMode", dop1);
-        dop1 = 0;
         cache_get_value_int(0, "ColorPlayer", PlayerInfo[playerid][pColorNickname]);
         cache_get_value_int(0, "SpawnChange", PlayerInfo[playerid][pSpawnChange]);
         cache_get_value_int(0, "sex", PlayerInfo[playerid][pSex]);
@@ -4442,13 +4439,13 @@ fpub:OnPlayerLogin(playerid)
         new pWeapon[26 * 11], pWeaponEx[26][11];
         cache_get_value_name(0, "weapons", pWeapon, 26 * 11);
         split(pWeapon, pWeaponEx, '|');
-        for (new i; i < 26; i++) gPlayerWeapon[playerid][i] = strval(pWeaponEx[i]);
+        for (new i; i < 26; i++) gPlayerWeapon[playerid][i] = WEAPON:strval(pWeaponEx[i]);
 
         cache_get_value_int(0, "Gang", PlayerInfo[playerid][pGang]);
         cache_get_value_int(0, "GangLvl", PlayerInfo[playerid][pGangLvl]);
 
         printf("Игрок %s --> (логирование) .", PlayerInfo[playerid][pName]);
-        gPlayerLogged[playerid] = 1;
+        gPlayerLogged[playerid] = true;
 
         new str[128];
         mysql_format(ServerDB, str, sizeof(str), "SELECT * FROM `bans` WHERE `NameBan` = '%e' LIMIT 1", PlayerInfo[playerid][pName]);
@@ -4463,12 +4460,12 @@ fpub:OnPlayerLogin(playerid)
 
         if (PlayerInfo[playerid][pSex] == 0)
         {
-            ShowPlayerDialog(playerid, 300, 0, "{FFFF00}>>[ВЫБОР ПОЛА]<<", "{FFFF00}Выберите пол своего персонажа", "{CCFF00}Мужской", "{FF00FF}Женский");
+            ShowPlayerDialog(playerid, 300, DIALOG_STYLE_MSGBOX, "{FFFF00}>>[ВЫБОР ПОЛА]<<", "{FFFF00}Выберите пол своего персонажа", "{CCFF00}Мужской", "{FF00FF}Женский");
             PlayerInfo[playerid][pSkin] = -1;
         }
         else if (GetPVarInt(playerid, "MnMode") == 0)
         {
-            ShowPlayerDialog(playerid, 302, 0, "{8F30E4}>>[Выбор клавиши меню]<<", "{FFFFFF}Выберите, на какую кнопку будете открывать {8F30E4}меню {FFFFFF}и {8F30E4}активировать пикапы", "{CCFF00}ALT/2", "{FF0000}Y");
+            ShowPlayerDialog(playerid, 302, DIALOG_STYLE_MSGBOX, "{8F30E4}>>[Выбор клавиши меню]<<", "{FFFFFF}Выберите, на какую кнопку будете открывать {8F30E4}меню {FFFFFF}и {8F30E4}активировать пикапы", "{CCFF00}ALT/2", "{FF0000}Y");
         }
 
         SetTimerEx("SpawnLogin", 300, false, "i", playerid);
@@ -4482,9 +4479,7 @@ fpub:OnPlayerLogin(playerid)
 
 fpub:SpawnLogin(playerid)
 {
-
-
-    gPlayerSpawned[playerid] = 1;
+    gPlayerSpawned[playerid] = true;
     SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Желаем Вам приятной игры {CCFF00}:3");
     StopAudioStreamForPlayer(playerid);
 
@@ -4565,7 +4560,7 @@ fpub:CheckLoginPrison(playerid)
 
             if (Prison[playerid] > gettime())
             {
-                Teleport(playerid, 1104.6355, 1098.7548, 1098.0000, 0, 0, 0, 88.7659);
+                Teleport(playerid, 1104.6355, 1098.7548, 1098.0000, 0, 0, false, 88.7659);
                 prisontimer[playerid] = SetTimerEx("CheckPrison", 5000, false, "i", playerid);
             }
         }
@@ -4590,7 +4585,7 @@ fpub:CheckBann(playerid)
         if (unban > gettime())
         {
             format(str, sizeof(str), "{FF0000}ВЫ БЫЛИ ЗАБАНЕНЫ!!!\n{FFFFFF}Дата бана: %s\nДата разбана: %s\nЗабанил: %s\nПричина: %s\n\n{FFFFFF}Вы можете подать заявление по разбану в обсуждениях группы\n{CCFF00}"VK_G"", date("%dd/%mm/%yyyy в %hh:%ii:%ss", ban), date("%dd/%mm/%yyyy в %hh:%ii:%ss", unban), who, reason);
-            ShowPlayerDialog(playerid, DIALOG_ZERO, 0, "{CCFF00}>>[ВЫ ЗАБАНЕНЫ!]<<", str, "Ok", "");
+            ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "{CCFF00}>>[ВЫ ЗАБАНЕНЫ!]<<", str, "Ok", "");
 
             Kick(playerid);
         }
@@ -4620,7 +4615,7 @@ fpub:CheckBannTwo(playerid)
         if (unban > gettime())
         {
             format(str, sizeof(str), "{FF0000}ВЫ БЫЛИ ЗАБАНЕНЫ!!!\n{FFFFFF}Дата бана: %s\nДата разбана: %s\nЗабанил: %s\nПричина: %s\n\n{FFFFFF}Вы можете подать заявление по разбану в обсуждениях группы\n{CCFF00}"VK_G"", date("%dd/%mm/%yyyy в %hh:%ii:%ss", ban), date("%dd/%mm/%yyyy в %hh:%ii:%ss", unban), who, reason);
-            ShowPlayerDialog(playerid, 2, 0, "{CCFF00}>>[ВЫ ЗАБАНЕНЫ!]<<", str, "Ok", "");
+            ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "{CCFF00}>>[ВЫ ЗАБАНЕНЫ!]<<", str, "Ok", "");
 
             Kick(playerid);
         }
@@ -4652,7 +4647,7 @@ fpub:CheckBanIP(playerid)
         if (unban > gettime())
         {
             format(str, sizeof(str), "{FF0000}ВАШ IP БЫЛ ЗАБАНЕНЫ!!!\n{FFFFFF}Дата бана: %s\nДата разбана: %s\nЗабанил: %s\nПричина: %s\n\n{FFFFFF}Вы можете подать заявление по разбану в обсуждениях группы\n{CCFF00}"VK_G"", date("%dd/%mm/%yyyy в %hh:%ii:%ss", ban), date("%dd/%mm/%yyyy в %hh:%ii:%ss", unban), who, reason);
-            ShowPlayerDialog(playerid, 2, 0, "{CCFF00}>>[ВЫ ЗАБАНЕНЫ!]<<", str, "Ok", "");
+            ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "{CCFF00}>>[ВЫ ЗАБАНЕНЫ!]<<", str, "Ok", "");
 
             Kick(playerid);
         }
@@ -4669,7 +4664,7 @@ fpub:CheckBanIP(playerid)
         {
             if (i != playerid)SendClientMessage(i, COLOR_VIOLET, str);
         }
-        gPlayerLogged[playerid] = 1;
+        gPlayerLogged[playerid] = true;
     }
     return 1;
 }
@@ -4851,7 +4846,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (strlen(inputtext) < 6) return ShowPlayerLoginDialog(playerid);
             new hashed_pass[65];
-            SHA256_PassHash(inputtext, PlayerInfo[playerid][pHASH], hashed_pass, 65);
+            SHA256_Hash(inputtext, PlayerInfo[playerid][pHASH], hashed_pass, 65);
             if (strcmp(PlayerInfo[playerid][pKey], hashed_pass) == 0)
             {
                 //готово
@@ -4940,7 +4935,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 salt[i] = inc_gLetters[random(sizeof(inc_gLetters))];
             }
-            SHA256_PassHash(inputtext, salt, hashed_pass, 65);
+            SHA256_Hash(inputtext, salt, hashed_pass, 65);
             new query[512];
             mysql_format(ServerDB, query, sizeof(query), "INSERT INTO `players` (`PlayerName`, `Pass`, `HASH`, `Money`, `Kills`, `Deaths`, `TDReg`, `Combo`, `IPAdr`, `Skin`) VALUES ('%e','%s','%e','50000','0','0','%d','1','%e','-1')", PlayerInfo[playerid][pName], hashed_pass, salt, gettime(), PlayerInfo[playerid][pIPAdr]);
             mysql_tquery(ServerDB, query, "OnPlayerRegistered", "is", playerid, inputtext);
@@ -4957,55 +4952,55 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 case 0:
                 {
-                    PrepareDuelWeapon(playerid, 24);
+                    PrepareDuelWeapon2(playerid, WEAPON_DEAGLE);
                 }
                 case 1:
                 {
-                    PrepareDuelWeapon(playerid, 25);
+                    PrepareDuelWeapon2(playerid, WEAPON_SHOTGUN);
                 }
                 case 2:
                 {
-                    PrepareDuelWeapon(playerid, 26);
+                    PrepareDuelWeapon2(playerid, WEAPON_SAWEDOFF);
                 }
                 case 3:
                 {
-                    PrepareDuelWeapon(playerid, 27);
+                    PrepareDuelWeapon2(playerid, WEAPON_SHOTGSPA);
                 }
                 case 4:
                 {
-                    PrepareDuelWeapon(playerid, 28);
+                    PrepareDuelWeapon2(playerid, WEAPON_UZI);
                 }
                 case 5:
                 {
-                    PrepareDuelWeapon(playerid, 29);
+                    PrepareDuelWeapon2(playerid, WEAPON_MP5);
                 }
                 case 6:
                 {
-                    PrepareDuelWeapon(playerid, 30);
+                    PrepareDuelWeapon2(playerid, WEAPON_AK47);
                 }
                 case 7:
                 {
-                    PrepareDuelWeapon(playerid, 31);
+                    PrepareDuelWeapon2(playerid, WEAPON_M4);
                 }
                 case 8:
                 {
-                    PrepareDuelWeapon(playerid, 32);
+                    PrepareDuelWeapon2(playerid, WEAPON_TEC9);
                 }
                 case 9:
                 {
-                    PrepareDuelWeapon(playerid, 33);
+                    PrepareDuelWeapon2(playerid, WEAPON_RIFLE);
                 }
                 case 10:
                 {
-                    PrepareDuelWeapon(playerid, 34);
+                    PrepareDuelWeapon2(playerid, WEAPON_SNIPER);
                 }
                 case 11:
                 {
-                    PrepareDuelWeapon(playerid, 22);
+                    PrepareDuelWeapon2(playerid, WEAPON_COLT45);
                 }
                 case 12:
                 {
-                    PrepareDuelWeapon(playerid, 23);
+                    PrepareDuelWeapon2(playerid, WEAPON_SILENCED);
                 }
             }
         }
@@ -5020,55 +5015,55 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 case 0:
                 {
-                    PrepareDuelWeapon2(playerid, 24);
+                    PrepareDuelWeapon2(playerid, WEAPON_DEAGLE);
                 }
                 case 1:
                 {
-                    PrepareDuelWeapon2(playerid, 25);
+                    PrepareDuelWeapon2(playerid, WEAPON_SHOTGUN);
                 }
                 case 2:
                 {
-                    PrepareDuelWeapon2(playerid, 26);
+                    PrepareDuelWeapon2(playerid, WEAPON_SAWEDOFF);
                 }
                 case 3:
                 {
-                    PrepareDuelWeapon2(playerid, 27);
+                    PrepareDuelWeapon2(playerid, WEAPON_SHOTGSPA);
                 }
                 case 4:
                 {
-                    PrepareDuelWeapon2(playerid, 28);
+                    PrepareDuelWeapon2(playerid, WEAPON_UZI);
                 }
                 case 5:
                 {
-                    PrepareDuelWeapon2(playerid, 29);
+                    PrepareDuelWeapon2(playerid, WEAPON_MP5);
                 }
                 case 6:
                 {
-                    PrepareDuelWeapon2(playerid, 30);
+                    PrepareDuelWeapon2(playerid, WEAPON_AK47);
                 }
                 case 7:
                 {
-                    PrepareDuelWeapon2(playerid, 31);
+                    PrepareDuelWeapon2(playerid, WEAPON_M4);
                 }
                 case 8:
                 {
-                    PrepareDuelWeapon2(playerid, 32);
+                    PrepareDuelWeapon2(playerid, WEAPON_TEC9);
                 }
                 case 9:
                 {
-                    PrepareDuelWeapon2(playerid, 33);
+                    PrepareDuelWeapon2(playerid, WEAPON_RIFLE);
                 }
                 case 10:
                 {
-                    PrepareDuelWeapon2(playerid, 34);
+                    PrepareDuelWeapon2(playerid, WEAPON_SNIPER);
                 }
                 case 11:
                 {
-                    PrepareDuelWeapon2(playerid, 22);
+                    PrepareDuelWeapon2(playerid, WEAPON_COLT45);
                 }
                 case 12:
                 {
-                    PrepareDuelWeapon2(playerid, 23);
+                    PrepareDuelWeapon2(playerid, WEAPON_SILENCED);
                 }
             }
         }
@@ -5114,7 +5109,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 for (new j; j < 3; j++) GangInfo[i][gSpawns][j] = 0.0;
                 GangInfo[i][gSpawnInt] = 0;
                 GangInfo[i][gPlayers] = 1;
-                GangInfo[i][gVerifyCapt] = 0;
+                GangInfo[i][gVerifyCapt] = false;
                 GangInfo[i][gCDate] = gettime();
                 sscanf(PlayerInfo[playerid][pName], "s[24]", GangInfo[i][gGlawa]);
                 for (new j; j < 6; j++) GangInfo[i][gSkins][j] = 0;
@@ -5411,7 +5406,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]))
                 {
                     format(string, sizeof(string), "{FFFFFF}С последнего посещения владельца накопилось: {CCFF00}$%d {FFFFFF}средств на счёте!", BI[i][accumulation]);
-                    ShowPlayerDialog(playerid, DIALOG_ZERO, 0, "{CCFF00}>>[СЧЁТ В БИЗНЕСЕ]<<", string, "ОК", "");
+                    ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "{CCFF00}>>[СЧЁТ В БИЗНЕСЕ]<<", string, "ОК", "");
                 }
             }
             return 1;
@@ -5493,7 +5488,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     {
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке работы недоступны!");
         if (!response) return PlayerDialogMenu(playerid);
-        Teleport(playerid, JobTeleport[listitem][0], JobTeleport[listitem][1], JobTeleport[listitem][2], 0, 0, 0, 0, false);
+        Teleport(playerid, JobTeleport[listitem][0], JobTeleport[listitem][1], JobTeleport[listitem][2], 0, 0, false, 0, false);
         return 1;
     }
     if (dialogid == 2503)
@@ -5633,7 +5628,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             strcat(strcc, "{8F30E4}> {FFFFFF}В чате запрещено обсуждение действий администраторов\r\n");
             strcat(strcc, "{8F30E4}> {FFFFFF}В чате запрещено писать о продаже игровых аккаунтов за реальные деньги\r\n");
             strcat(strcc, "\n{FFFFFF}Вы ознакомлены с {FF0000}основными {FFFFFF}правилами и возможностями чата данного сервера!\r");
-            ShowPlayerDialog(playerid, DIALOG_ZERO, 0, "Помощь по чату сервера", strcc, "ГОТОВО", "");
+            ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "Помощь по чату сервера", strcc, "ГОТОВО", "");
             return 1;
         }
         if (listitem == 2) return pc_cmd_rules(playerid);
@@ -5650,7 +5645,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             strcat(strcc, "\t{FFFFFF}Ссылка на владельца проекта: {8F30E4}"VK_GEN_D"\r\n");
             strcat(strcc, "\t{FFFFFF}Расшифровка DDP - {8F30E4}Drift Dreams Project\r");
             strcat(strcc, "\t{FFFFFF}Серёга, мы всё{CCFF00}проебали :(\r");
-            ShowPlayerDialog(playerid, DIALOG_ZERO, 0, "Информация о сервере DD", strcc, "ГОТОВО", "");
+            ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "Информация о сервере DD", strcc, "ГОТОВО", "");
             return 1;
         }
         return 1;
@@ -5668,7 +5663,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 1)
             {
                 new vehicleid;
-                if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
                 {
                     vehicleid = GetPlayerVehicleID(playerid);
                 }
@@ -5699,7 +5694,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 2)
             {
                 new vehicleid;
-                if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
                 {
                     vehicleid = GetPlayerVehicleID(playerid);
                 }
@@ -5712,7 +5707,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                     return 1;
                 }
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 9);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_HYDRAULICS);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -5781,7 +5776,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 11) //неон
             {
-                if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
                 {
                     ShowPlayerDialog(playerid, 40, DIALOG_STYLE_LIST, "Неон", "{FF3300}Красный\n{0033CC}Синий\n{33FF00}Зелёный\
 					\n{FFFF00}Жёлтый\n{E63E85}Розовый\nБелый\nУдалить Неон", "OK", "Отмена");
@@ -5797,7 +5792,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 12) //фары
             {
-                if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
                 {
                     ShowPlayerDialog(playerid, 1600, DIALOG_STYLE_LIST, "Установка Фар", "Установить{ffffff}||||||\nУстановить{ff0000}||||||\nУстановить{00ff00}||||||\nУстановить{42aaff}||||||\nУстановить{ffffff}|||{1811F7}|||\n{ff0000}Удалить фары", "Выбрать", "Выход");
                 }
@@ -5812,7 +5807,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 13) //установка Быстрый тюнинг
             {
-                if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
                 {
                     new vehicleid = GetPlayerVehicleID(playerid);
                     new cartype = GetVehicleModel(vehicleid);
@@ -5929,7 +5924,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new carid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 carid = GetPlayerVehicleID(playerid);
             }
@@ -5943,7 +5938,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 0) //сменить номер
             {
-                if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
                 {
                     ShowPlayerDialog(playerid, 41, DIALOG_STYLE_INPUT, "Сменить номер", "Введите номера авто", "OK", "Отмена");
                 }
@@ -6034,7 +6029,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
             }
@@ -6046,7 +6041,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				\nВключить все фары", "OK", "Отмена");
                 return 1;
             }
-            new panels, doors, lights, tires;
+            new VEHICLE_PANEL_STATUS:panels, VEHICLE_DOOR_STATUS:doors, VEHICLE_LIGHT_STATUS:lights, VEHICLE_TYRE_STATUS:tires;
             GetVehicleDamageStatus(vehicleid, panels, doors, lights, tires);
             new dop;
             if (listitem == 0)dop = 3;
@@ -6058,8 +6053,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 6)dop = 207;
             if (listitem >= 0 && listitem <= 6)
             {
-                autorepair[playerid] = 0;
-                UpdateVehicleDamageStatus(vehicleid, panels, doors, dop, tires);
+                autorepair[playerid] = false;
+                UpdateVehicleDamageStatus(vehicleid, panels, doors, VEHICLE_LIGHT_STATUS:dop, tires);
                 PlayerPlaySound(playerid, 5202, 0.0, 0.0, 0.0);
 
                 ShowPlayerDialog(playerid, 52, DIALOG_STYLE_LIST, "Выключить фары", "Левую переднюю\nПравую переднюю\nОбе передних\
@@ -6069,10 +6064,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 7)
             {
-                autorepair[playerid] = 1;
-                if (lights != 0)
+                autorepair[playerid] = true;
+                if (lights != VEHICLE_LIGHT_STATUS_NONE)
                 {
-                    UpdateVehicleDamageStatus(vehicleid, panels, doors, 0, tires);
+                    UpdateVehicleDamageStatus(vehicleid, panels, doors, VEHICLE_LIGHT_STATUS_NONE, tires);
                     PlayerPlaySound(playerid, 1133, 0.0, 0.0, 0.0);
                 }
 
@@ -6094,7 +6089,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
             }
@@ -6107,7 +6102,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				\nОбе двери и багажник\nОбе двери ' капот и багажник\nВосстановить все детали", "OK", "Отмена");
                 return 1;
             }
-            new panels, doors, lights, tires;
+            new VEHICLE_PANEL_STATUS:panels, VEHICLE_DOOR_STATUS:doors, VEHICLE_LIGHT_STATUS:lights, VEHICLE_TYRE_STATUS:tires;
             GetVehicleDamageStatus(vehicleid, panels, doors, lights, tires);
             new dop;
             if (listitem == 0)dop = 4;
@@ -6127,9 +6122,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 14)dop = 67372036;
             if (listitem >= 0 && listitem <= 14)
             {
-                autorepair[playerid] = 0;
-                UpdateVehicleDamageStatus(vehicleid, panels, 0, lights, tires);
-                UpdateVehicleDamageStatus(vehicleid, panels, dop, lights, tires);
+                autorepair[playerid] = false;
+                UpdateVehicleDamageStatus(vehicleid, panels, VEHICLE_DOOR_STATUS_NONE, lights, tires);
+                UpdateVehicleDamageStatus(vehicleid, panels, VEHICLE_DOOR_STATUS:dop, lights, tires);
                 PlayerPlaySound(playerid, 5202, 0.0, 0.0, 0.0);
 
                 ShowPlayerDialog(playerid, 53, DIALOG_STYLE_LIST, "Удалить детали транспорта", "Капот\nБагажник\nКапот и багажник\
@@ -6140,10 +6135,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 15)
             {
-                autorepair[playerid] = 1;
-                if (doors != 0)
+                autorepair[playerid] = true;
+                if (doors != VEHICLE_DOOR_STATUS_NONE)
                 {
-                    UpdateVehicleDamageStatus(vehicleid, panels, 0, lights, tires);
+                    UpdateVehicleDamageStatus(vehicleid, panels, VEHICLE_DOOR_STATUS_NONE, lights, tires);
                     PlayerPlaySound(playerid, 1133, 0.0, 0.0, 0.0);
                 }
 
@@ -6166,7 +6161,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
             }
@@ -6177,7 +6172,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				\nВосстановить бампера", "OK", "Отмена");
                 return 1;
             }
-            new panels, doors, lights, tires;
+            new VEHICLE_PANEL_STATUS:panels, VEHICLE_DOOR_STATUS:doors, VEHICLE_LIGHT_STATUS:lights, VEHICLE_TYRE_STATUS:tires;
             GetVehicleDamageStatus(vehicleid, panels, doors, lights, tires);
             new dop;
             if (listitem == 0)dop = 3145728;
@@ -6185,9 +6180,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 2)dop = 53477376;
             if (listitem >= 0 && listitem <= 2)
             {
-                autorepair[playerid] = 0;
-                UpdateVehicleDamageStatus(vehicleid, 0, doors, lights, tires);
-                UpdateVehicleDamageStatus(vehicleid, dop, doors, lights, tires);
+                autorepair[playerid] = false;
+                UpdateVehicleDamageStatus(vehicleid, VEHICLE_PANEL_STATUS_NONE, doors, lights, tires);
+                UpdateVehicleDamageStatus(vehicleid, VEHICLE_PANEL_STATUS:dop, doors, lights, tires);
                 PlayerPlaySound(playerid, 5202, 0.0, 0.0, 0.0);
 
                 ShowPlayerDialog(playerid, 54, DIALOG_STYLE_LIST, "Удалить бампера", "Передний\nЗадний\nОба\
@@ -6196,10 +6191,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 3)
             {
-                autorepair[playerid] = 1;
-                if (panels != 0)
+                autorepair[playerid] = true;
+                if (panels != VEHICLE_PANEL_STATUS_NONE)
                 {
-                    UpdateVehicleDamageStatus(vehicleid, 0, doors, lights, tires);
+                    UpdateVehicleDamageStatus(vehicleid, VEHICLE_PANEL_STATUS_NONE, doors, lights, tires);
                     PlayerPlaySound(playerid, 1133, 0.0, 0.0, 0.0);
                 }
 
@@ -6220,7 +6215,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
             }
@@ -6233,14 +6228,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				\nОбе левых и правую заднюю\nОбе левых и правую переднюю\nВсе\nВулканизировать все шины", "OK", "Отмена");
                 return 1;
             }
-            new panels, doors, lights, tires;
+            new VEHICLE_PANEL_STATUS:panels, VEHICLE_DOOR_STATUS:doors, VEHICLE_LIGHT_STATUS:lights, VEHICLE_TYRE_STATUS:tires;
             GetVehicleDamageStatus(vehicleid, panels, doors, lights, tires);
             if (listitem == 15)
             {
-                autorepair[playerid] = 1;
-                if (tires != 0)
+                autorepair[playerid] = true;
+                if (tires != VEHICLE_TYRE_STATUS_NONE)
                 {
-                    UpdateVehicleDamageStatus(vehicleid, panels, doors, lights, 0);
+                    UpdateVehicleDamageStatus(vehicleid, panels, doors, lights, VEHICLE_TYRE_STATUS_NONE);
                     PlayerPlaySound(playerid, 1133, 0.0, 0.0, 0.0);
                 }
 
@@ -6254,8 +6249,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             dop = listitem;
             dop++;
 
-            autorepair[playerid] = 0;
-            UpdateVehicleDamageStatus(vehicleid, panels, doors, lights, dop);
+            autorepair[playerid] = false;
+            UpdateVehicleDamageStatus(vehicleid, panels, doors, lights, VEHICLE_TYRE_STATUS:dop);
             PlayerPlaySound(playerid, 5202, 0.0, 0.0, 0.0);
 
             ShowPlayerDialog(playerid, 51, DIALOG_STYLE_LIST, "Проколоть шины", "Правую заднюю / заднюю\nПравую переднюю / переднюю\
@@ -6281,14 +6276,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                 {
-                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                 }
                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                GivePlayerWeapon(playerid, playweap[playerid][0], playammo[playerid][0]);//возвращаем предметы
-                GivePlayerWeapon(playerid, playweap[playerid][1], playammo[playerid][1]);
-                GivePlayerWeapon(playerid, playweap[playerid][9], playammo[playerid][9]);
-                GivePlayerWeapon(playerid, playweap[playerid][10], playammo[playerid][10]);
-                GivePlayerWeapon(playerid, playweap[playerid][11], playammo[playerid][11]);
+                GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT_UNARMED], playammo[playerid][WEAPON_SLOT_UNARMED]);//возвращаем предметы
+                GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT_MELEE], playammo[playerid][WEAPON_SLOT_MELEE]);
+                GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT_EQUIPMENT], playammo[playerid][WEAPON_SLOT_EQUIPMENT]);
+                GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT_GIFT], playammo[playerid][WEAPON_SLOT_GIFT]);
+                GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT_GADGET], playammo[playerid][WEAPON_SLOT_GADGET]);
                 ShowPlayerDialog(playerid, 20, DIALOG_STYLE_LIST, "Купить оружие", "Холодное оружие\nПистолеты\nРучные пулемёты\nДробовики\nВинтовки\nАвтоматы\nПредметы\nУбрать оружие", "Выбор", "Назад");
             }
         }
@@ -6375,7 +6370,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 SendClientMessageToAll(COLOR_VIOLET, sssm);
                 UniParam[playerid] = 0;
                 FloodStop[playerid] = 1;
-                ApplyAnimation(playerid, "PAULNMAC", "wank_loop", 4.1, true, false, false, false, 0, true);
+                ApplyAnimation(playerid, "PAULNMAC", "wank_loop", 4.1, true, false, false, false, 0, SYNC_ALL);
                 SetTimerEx("ClearAnimationsForPlayer", 5000, false, "i", playerid);
                 SetTimerEx("AntiFlood", 5000, false, "i", playerid);
             }
@@ -6390,86 +6385,86 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     }
     if (dialogid == 7505)
     {
-        if (response == 1)
+        if (response)
         {
             switch (listitem)
             {
                 case 0:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 5, pweap, pammo);
-                    if ((pweap == 30 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 4000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_ASSAULT_RIFLE, pweap, pammo);
+                    if ((pweap == WEAPON_AK47 || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 4000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 30 && pammo > 900)
+                        if (pweap == WEAPON_AK47 && pammo > 900)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 30 || pweap == 0) && pammo <= 900)
+                            if ((pweap == WEAPON_AK47 || pweap == WEAPON_FIST) && pammo <= 900)
                             {
                                 MoneyK(playerid, -4000);
-                                GivePlayerWeapon(playerid, 30, 300);
+                                GivePlayerWeapon(playerid, WEAPON_AK47, 300);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][5] = 0;//обнуление 5-го слота
-                                playammo[playerid][5] = 0;
+                                playweap[playerid][WEAPON_SLOT_ASSAULT_RIFLE] = WEAPON_UNKNOWN;//обнуление 5-го слота
+                                playammo[playerid][WEAPON_SLOT_ASSAULT_RIFLE] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
-                                GivePlayerWeapon(playerid, 30, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_AK47, pammo);
                             }
                         }
                     }
                 }
                 case 1:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 5, pweap, pammo);
-                    if ((pweap == 31 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 9000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_ASSAULT_RIFLE, pweap, pammo);
+                    if ((pweap == WEAPON_M4 || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 9000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 31 && pammo > 900)
+                        if (pweap == WEAPON_M4 && pammo > 900)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 31 || pweap == 0) && pammo <= 900)
+                            if ((pweap == WEAPON_M4 || pweap == WEAPON_FIST) && pammo <= 900)
                             {
                                 MoneyK(playerid, -9000);
-                                GivePlayerWeapon(playerid, 31, 300);
+                                GivePlayerWeapon(playerid, WEAPON_M4, 300);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][5] = 0;//обнуление 5-го слота
-                                playammo[playerid][5] = 0;
+                                playweap[playerid][WEAPON_SLOT_ASSAULT_RIFLE] = UNKNOWN_WEAPON;//обнуление 5-го слота
+                                playammo[playerid][WEAPON_SLOT_ASSAULT_RIFLE] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
-                                GivePlayerWeapon(playerid, 31, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_M4, pammo);
                             }
                         }
                     }
@@ -6485,48 +6480,48 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     }
     if (dialogid == 7506)
     {
-        if (response == 1)
+        if (response)
         {
             switch (listitem)
             {
                 case 0:
                 {
-                    GivePlayerWeapon(playerid, 43, 500);
+                    GivePlayerWeapon(playerid, WEAPON_CAMERA, 500);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 1:
                 {
-                    GivePlayerWeapon(playerid, 1, 0);
+                    GivePlayerWeapon(playerid, WEAPON_BRASSKNUCKLE, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 2:
                 {
-                    GivePlayerWeapon(playerid, 9, 0);
+                    GivePlayerWeapon(playerid, WEAPON_CHAINSAW, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 3:
                 {
-                    GivePlayerWeapon(playerid, 11, 0);
+                    GivePlayerWeapon(playerid, WEAPON_DILDO2, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 4:
                 {
-                    GivePlayerWeapon(playerid, 14, 500);
+                    GivePlayerWeapon(playerid, WEAPON_FLOWER, 500);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 5:
                 {
-                    GivePlayerWeapon(playerid, 41, 500);
+                    GivePlayerWeapon(playerid, WEAPON_SPRAYCAN, 500);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 6:
                 {
-                    GivePlayerWeapon(playerid, 42, 1000);
+                    GivePlayerWeapon(playerid, WEAPON_FIREEXTINGUISHER, 1000);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 7:
                 {
-                    GivePlayerWeapon(playerid, 46, 1);
+                    GivePlayerWeapon(playerid, WEAPON_PARACHUTE, 1);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
             }
@@ -6540,64 +6535,64 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     }
     if (dialogid == 7504)
     {
-        if (response == 1)
+        if (response)
         {
             switch (listitem)
             {
                 case 0:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 6, pweap, pammo);
-                    if ((pweap == 33 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 1000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_LONG_RIFLE, pweap, pammo);
+                    if ((pweap == WEAPON_RIFLE || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 1000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 33 && pammo > 300)
+                        if (pweap == WEAPON_RIFLE && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 33 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_RIFLE || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -1000);
-                                GivePlayerWeapon(playerid, 33, 100);
+                                GivePlayerWeapon(playerid, WEAPON_RIFLE, 100);
                             }
                             else
                             {
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 33, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_RIFLE, pammo);
                             }
                         }
                     }
                 }
                 case 1:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 6, pweap, pammo);
-                    if ((pweap == 34 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 9000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_LONG_RIFLE, pweap, pammo);
+                    if ((pweap == WEAPON_SNIPER || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 9000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 34 && pammo > 300)
+                        if (pweap == WEAPON_SNIPER && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 34 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_SNIPER || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -9000);
-                                GivePlayerWeapon(playerid, 34, 100);
+                                GivePlayerWeapon(playerid, WEAPON_SNIPER, 100);
                             }
                             else
                             {
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 34, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_SNIPER, pammo);
                             }
                         }
                     }
@@ -6619,82 +6614,82 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 case 0:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 3, pweap, pammo);
-                    if ((pweap == 26 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 5500)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_SHOTGUN, pweap, pammo);
+                    if ((pweap == WEAPON_SAWEDOFF || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 5500)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 26 && pammo > 300)
+                        if (pweap == WEAPON_SAWEDOFF && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 26 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_SAWEDOFF || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -5500);
-                                GivePlayerWeapon(playerid, 26, 100);
+                                GivePlayerWeapon(playerid, WEAPON_SAWEDOFF, 100);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][3] = 0;//обнуление 3-го слота
-                                playammo[playerid][3] = 0;
+                                playweap[playerid][WEAPON_SLOT_SHOTGUN] = UNKNOWN_WEAPON;//обнуление 3-го слота
+                                playammo[playerid][WEAPON_SLOT_SHOTGUN] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 26, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_SAWEDOFF, pammo);
                             }
                         }
                     }
                 }
                 case 1:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 3, pweap, pammo);
-                    if ((pweap == 27 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 6000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_SHOTGUN, pweap, pammo);
+                    if ((pweap == WEAPON_SHOTGSPA || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 6000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 27 && pammo > 300)
+                        if (pweap == WEAPON_SHOTGSPA && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 27 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_SHOTGSPA || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -6000);
-                                GivePlayerWeapon(playerid, 27, 100);
+                                GivePlayerWeapon(playerid, WEAPON_SHOTGSPA, 100);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][3] = 0;//обнуление 3-го слота
-                                playammo[playerid][3] = 0;
+                                playweap[playerid][WEAPON_SLOT_SHOTGUN] = UNKNOWN_WEAPON;//обнуление 3-го слота
+                                playammo[playerid][WEAPON_SLOT_SHOTGUN] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 27, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_SHOTGSPA, pammo);
                             }
                         }
                     }
@@ -6702,41 +6697,41 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
                 case 2:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 3, pweap, pammo);
-                    if ((pweap == 25 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 4000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_SHOTGUN, pweap, pammo);
+                    if ((pweap == WEAPON_SHOTGUN || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 4000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 25 && pammo > 300)
+                        if (pweap == WEAPON_SHOTGUN && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 25 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_SHOTGUN || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -4000);
-                                GivePlayerWeapon(playerid, 25, 100);
+                                GivePlayerWeapon(playerid, WEAPON_SHOTGUN, 100);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][3] = 0;//обнуление 3-го слота
-                                playammo[playerid][3] = 0;
+                                playweap[playerid][WEAPON_SLOT_SHOTGUN] = UNKNOWN_WEAPON;//обнуление 3-го слота
+                                playammo[playerid][WEAPON_SLOT_SHOTGUN] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 25, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_SHOTGUN, pammo);
                             }
                         }
                     }
@@ -6759,123 +6754,123 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 case 0:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 4, pweap, pammo);
-                    if ((pweap == 29 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 3000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT:4, pweap, pammo);
+                    if ((pweap == WEAPON_MP5 || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 3000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 29 && pammo > 900)
+                        if (pweap == WEAPON_MP5 && pammo > 900)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 29 || pweap == 0) && pammo <= 900)
+                            if ((pweap == WEAPON_MP5 || pweap == WEAPON_FIST) && pammo <= 900)
                             {
                                 MoneyK(playerid, -3000);
-                                GivePlayerWeapon(playerid, 29, 300);
+                                GivePlayerWeapon(playerid, WEAPON_MP5, 300);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][4] = 0;//обнуление 4-го слота
-                                playammo[playerid][4] = 0;
+                                playweap[playerid][WEAPON_SLOT_MACHINE_GUN] = UNKNOWN_WEAPON;//обнуление 4-го слота
+                                playammo[playerid][WEAPON_SLOT_MACHINE_GUN] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 29, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_MP5, pammo);
                             }
                         }
                     }
                 }
                 case 1:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 4, pweap, pammo);
-                    if ((pweap == 32 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 4000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_MACHINE_GUN, pweap, pammo);
+                    if ((pweap == WEAPON_TEC9 || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 4000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 32 && pammo > 900)
+                        if (pweap == WEAPON_TEC9 && pammo > 900)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 32 || pweap == 0) && pammo <= 900)
+                            if ((pweap == WEAPON_TEC9 || pweap == WEAPON_FIST) && pammo <= 900)
                             {
                                 MoneyK(playerid, -4000);
-                                GivePlayerWeapon(playerid, 32, 300);
+                                GivePlayerWeapon(playerid, WEAPON_TEC9, 300);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][4] = 0;//обнуление 4-го слота
-                                playammo[playerid][4] = 0;
+                                playweap[playerid][WEAPON_SLOT_MACHINE_GUN] = UNKNOWN_WEAPON;//обнуление 4-го слота
+                                playammo[playerid][WEAPON_SLOT_MACHINE_GUN] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 32, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_TEC9, pammo);
                             }
                         }
                     }
                 }
                 case 2:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 4, pweap, pammo);
-                    if ((pweap == 28 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 2000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_MACHINE_GUN, pweap, pammo);
+                    if ((pweap == WEAPON_UZI || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 2000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 28 && pammo > 900)
+                        if (pweap == WEAPON_UZI && pammo > 900)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 28 || pweap == 0) && pammo <= 900)
+                            if ((pweap == WEAPON_UZI || pweap == WEAPON_FIST) && pammo <= 900)
                             {
                                 MoneyK(playerid, -2000);
-                                GivePlayerWeapon(playerid, 28, 300);
+                                GivePlayerWeapon(playerid, WEAPON_UZI, 300);
                             }
                             else
                             {
                                 for (new j = 0; j < 13; j++) //сохранение слотов оружия и предметов
                                 {
                                     //только для 3, 4, и 5-го слотов !!!
-                                    GetPlayerWeaponData(playerid, j, playweap[playerid][j], playammo[playerid][j]);
+                                    GetPlayerWeaponData(playerid, WEAPON_SLOT:j, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 ResetPlayerWeapons(playerid);//отбираем оружие и предметы
-                                playweap[playerid][4] = 0;//обнуление 4-го слота
-                                playammo[playerid][4] = 0;
+                                playweap[playerid][WEAPON_SLOT_MACHINE_GUN] = UNKNOWN_WEAPON;//обнуление 4-го слота
+                                playammo[playerid][WEAPON_SLOT_MACHINE_GUN] = 0;
                                 for (new j = 0; j < 13; j++) //возвращение слотов оружия и предметов
                                 {
-                                    GivePlayerWeapon(playerid, playweap[playerid][j], playammo[playerid][j]);
+                                    GivePlayerWeapon(playerid, playweap[playerid][WEAPON_SLOT:j], playammo[playerid][WEAPON_SLOT:j]);
                                 }
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 28, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_UZI, pammo);
                             }
                         }
                     }
@@ -6898,87 +6893,87 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 case 0:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 2, pweap, pammo);
-                    if ((pweap == 22 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 2000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_PISTOL, pweap, pammo);
+                    if ((pweap == WEAPON_COLT45 || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 2000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 22 && pammo > 300)
+                        if (pweap == WEAPON_COLT45 && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 22 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_COLT45 || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -2000);
-                                GivePlayerWeapon(playerid, 22, 100);
+                                GivePlayerWeapon(playerid, WEAPON_COLT45, 100);
                             }
                             else
                             {
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 22, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_COLT45, pammo);
                             }
                         }
                     }
                 }
                 case 1:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 2, pweap, pammo);
-                    if ((pweap == 23 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 2000)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_PISTOL, pweap, pammo);
+                    if ((pweap == WEAPON_SILENCED || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 2000)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 23 && pammo > 300)
+                        if (pweap == WEAPON_SILENCED && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 23 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_SILENCED || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -2000);
-                                GivePlayerWeapon(playerid, 23, 100);
+                                GivePlayerWeapon(playerid, WEAPON_SILENCED, 100);
                             }
                             else
                             {
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 23, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_SILENCED, pammo);
                             }
                         }
                     }
                 }
                 case 2:
                 {
-                    new pweap, pammo;
-                    GetPlayerWeaponData(playerid, 2, pweap, pammo);
-                    if ((pweap == 24 || pweap == 0) && GetPVarInt(playerid, "PlMon") < 2500)
+                    new WEAPON:pweap, pammo;
+                    GetPlayerWeaponData(playerid, WEAPON_SLOT_PISTOL, pweap, pammo);
+                    if ((pweap == WEAPON_DEAGLE || pweap == WEAPON_FIST) && GetPVarInt(playerid, "PlMon") < 2500)
                     {
                         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У Вас недостаточно денег!");
                     }
                     else
                     {
-                        if (pweap == 24 && pammo > 300)
+                        if (pweap == WEAPON_DEAGLE && pammo > 300)
                         {
                             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Больше купить нельзя.");
                         }
                         else
                         {
-                            if ((pweap == 24 || pweap == 0) && pammo <= 300)
+                            if ((pweap == WEAPON_DEAGLE || pweap == WEAPON_FIST) && pammo <= 300)
                             {
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 24, 100);
+                                GivePlayerWeapon(playerid, WEAPON_DEAGLE, 100);
                             }
                             else
                             {
                                 MoneyK(playerid, -2500);
-                                GivePlayerWeapon(playerid, 24, pammo);
+                                GivePlayerWeapon(playerid, WEAPON_DEAGLE, pammo);
                             }
                         }
                     }
@@ -6998,32 +6993,32 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 case 0:
                 {
-                    GivePlayerWeapon(playerid, 2, 0);
+                    GivePlayerWeapon(playerid, WEAPON_GOLFCLUB, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 1:
                 {
-                    GivePlayerWeapon(playerid, 4, 0);
+                    GivePlayerWeapon(playerid, WEAPON_KNIFE, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 2:
                 {
-                    GivePlayerWeapon(playerid, 5, 0);
+                    GivePlayerWeapon(playerid, WEAPON_BAT, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 3:
                 {
-                    GivePlayerWeapon(playerid, 6, 0);
+                    GivePlayerWeapon(playerid, WEAPON_SHOVEL, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 4:
                 {
-                    GivePlayerWeapon(playerid, 7, 0);
+                    GivePlayerWeapon(playerid, WEAPON_POOLSTICK, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
                 case 5:
                 {
-                    GivePlayerWeapon(playerid, 8, 0);
+                    GivePlayerWeapon(playerid, WEAPON_KATANA, 0);
                     PlayerPlaySound(playerid, 1054, 0.0, 0.0, 0.0);
                 }
             }
@@ -7067,7 +7062,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
             }
@@ -7079,17 +7074,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				\n{FFFFFF}Черный\n{FFFFFF}Белый", "OK", "Назад");
                 return 1;
             }
-            if (listitem == 0)ChangeVehicleColor(vehicleid, 3, 3);
-            if (listitem == 1)ChangeVehicleColor(vehicleid, 175, 175);
-            if (listitem == 2)ChangeVehicleColor(vehicleid, 79, 79);
-            if (listitem == 3)ChangeVehicleColor(vehicleid, 211, 211);
-            if (listitem == 4)ChangeVehicleColor(vehicleid, 6, 6);
-            if (listitem == 5)ChangeVehicleColor(vehicleid, 65, 65);
-            if (listitem == 6)ChangeVehicleColor(vehicleid, 86, 86);
-            if (listitem == 7)ChangeVehicleColor(vehicleid, 155, 155);
-            if (listitem == 8)ChangeVehicleColor(vehicleid, 9, 9);
-            if (listitem == 9)ChangeVehicleColor(vehicleid, 0, 0);
-            if (listitem == 10)ChangeVehicleColor(vehicleid, 1, 1);
+            if (listitem == 0)ChangeVehicleColours(vehicleid, 3, 3);
+            if (listitem == 1)ChangeVehicleColours(vehicleid, 175, 175);
+            if (listitem == 2)ChangeVehicleColours(vehicleid, 79, 79);
+            if (listitem == 3)ChangeVehicleColours(vehicleid, 211, 211);
+            if (listitem == 4)ChangeVehicleColours(vehicleid, 6, 6);
+            if (listitem == 5)ChangeVehicleColours(vehicleid, 65, 65);
+            if (listitem == 6)ChangeVehicleColours(vehicleid, 86, 86);
+            if (listitem == 7)ChangeVehicleColours(vehicleid, 155, 155);
+            if (listitem == 8)ChangeVehicleColours(vehicleid, 9, 9);
+            if (listitem == 9)ChangeVehicleColours(vehicleid, 0, 0);
+            if (listitem == 10)ChangeVehicleColours(vehicleid, 1, 1);
             PlayerPlaySound(playerid, 1134, 0.0, 0.0, 0.0);
             ShowPlayerDialog(playerid, 17, DIALOG_STYLE_LIST, "Цвет", "{FF0000}Красный\n{991E1E}Кирпичный\n{332AE0}Синий\
 			\n{A43FF9}Фиолетовый\n{FFFF33}Жёлтый\n{FF9933}Светло-жёлтый\n{28A937}Зеленый\n{1E9999}Бирюзовый\n{808080}Серый\
@@ -7124,7 +7119,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
             }
@@ -7156,7 +7151,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 17)
             {
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 7);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_WHEELS);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -7180,7 +7175,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
             }
@@ -7194,7 +7189,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 4)
             {
                 ChangeVehiclePaintjob(vehicleid, 4);
-                ChangeVehicleColor(vehicleid, 18, 18);
+                ChangeVehicleColours(vehicleid, 18, 18);
             }
             PlayerPlaySound(playerid, 1134, 0.0, 0.0, 0.0);
             ShowPlayerDialog(playerid, 38, DIALOG_STYLE_LIST, "Винилы", "Винил 1\nВинил 2\nВинил 3\nУдалить винил\n{FF0000}Секретный винил", "OK", "Назад");
@@ -7351,7 +7346,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (response)
         {
             new vehicleid;
-            if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+            if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
             {
                 vehicleid = GetPlayerVehicleID(playerid);
                 new cartype = GetVehicleModel(vehicleid);
@@ -7403,7 +7398,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 2) //Передний бампер стандарт
             {
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 10);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_FRONT_BUMPER);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -7435,7 +7430,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 5) //Задний бампер стандарт
             {
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 11);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_REAR_BUMPER);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -7467,7 +7462,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 8) //Удалить спойлер
             {
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 0);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_SPOILER);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -7547,7 +7542,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 11) //Боковые юбки стандарт
             {
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 3);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_SIDESKIRT);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -7579,7 +7574,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 14) //Удалить воздухозаборник
             {
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 2);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_ROOF);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -7611,7 +7606,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 17) //Выхлоп стандарт
             {
                 new dop;
-                dop = GetVehicleComponentInSlot(vehicleid, 6);
+                dop = GetVehicleComponentInSlot(vehicleid, CARMODTYPE_EXHAUST);
                 if (dop != 0)
                 {
                     RemoveVehicleComponent(vehicleid, dop);
@@ -8762,7 +8757,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 if (playcar[playerid] == 0)
                 {
-                    SetPlayerSpecialAction(playerid, 2);
+                    SetPlayerSpecialAction(playerid, SPECIAL_ACTION_USEJETPACK);
                     SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Заспавнен {CCFF00}JetPack");
                 }
                 else
@@ -8792,7 +8787,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                     }
                     DestroyVehicle(playcar[playerid]);//уничтожить свой транспорт
                     playcar[playerid] = 0;//несуществующий ид транспорта
-                    SetPlayerSpecialAction(playerid, 2);
+                    SetPlayerSpecialAction(playerid, SPECIAL_ACTION_USEJETPACK);
                     SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Заспавнен {CCFF00}JetPack");
                 }
             }
@@ -9332,22 +9327,22 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 2)
             {
-                if (autorepair[playerid] == 0)
+                if (!autorepair[playerid])
                 {
-                    autorepair[playerid] = 1;
-                    ShowPlayerDialog(playerid, 2, 0, "Автоматический ремонт", "Автоматический ремонт включен!", "OK", "");
+                    autorepair[playerid] = true;
+                    ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "Автоматический ремонт", "Автоматический ремонт включен!", "OK", "");
                 }
                 else
                 {
-                    autorepair[playerid] = 0;
-                    ShowPlayerDialog(playerid, 2, 0, "Автоматический ремонт", "Автоматический ремонт отключен!", "OK", "");
+                    autorepair[playerid] = false;
+                    ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "Автоматический ремонт", "Автоматический ремонт отключен!", "OK", "");
                 }
                 return 1;
             }
             if (listitem == 3) //уничтожить любой транспорт
             {
                 new car = GetPlayerVehicleID(playerid);
-                if (GetPlayerState(playerid) == 2) //если игрок на месте водителя, то:
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER) //если игрок на месте водителя, то:
                 {
                     foreach (Player, i) //уничтожить любой транспорт
                     {
@@ -9385,9 +9380,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 4)
             {
-                if (GetPlayerState(playerid) == 2 || GetPlayerState(playerid) == 3) //если игрок на месте водителя,
+                if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER //если игрок на месте водителя,
+				|| GetPlayerState(playerid) == PLAYER_STATE_PASSENGER) //или на месте пассажира, то:
                 {
-                    //или на месте пассажира, то:
                     new Float:angle;
                     new VID = GetPlayerVehicleID(playerid);
                     GetVehicleZAngle(VID, angle);//флипнуть
@@ -10156,9 +10151,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             case 0:
             {
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на {CCFF00}первую трек манию!");
-                Events[playerid][1] = 1;
+                Events[playerid][1] = true;
                 ResetPlayerWeapons(playerid);
-                Teleport(playerid, 4476.1670, -2928.5520, 6.3952, 200, 0, 1, 180);
+                Teleport(playerid, 4476.1670, -2928.5520, 6.3952, 200, 0, true, 180);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Пройди и получи {CCFF00}приз!");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Если вы захотите выйти, введите команду {CCFF00}/exit");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для перезапуска уровня введите команду {CCFF00}/restart");
@@ -10167,9 +10162,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             case 1:
             {
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на {CCFF00}вторую трек манию!");
-                Events[playerid][2] = 1;
+                Events[playerid][2] = true;
                 ResetPlayerWeapons(playerid);
-                Teleport(playerid, -824.2225, 5745.5137, 16.3740, 200, 0, 1, 0);
+                Teleport(playerid, -824.2225, 5745.5137, 16.3740, 200, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Пройди и получи {CCFF00}приз!");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Если вы захотите выйти, введите команду {CCFF00}/exit");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для перезапуска уровня введите команду {CCFF00}/restart");
@@ -10178,9 +10173,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             case 2:
             {
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на {CCFF00}третью трек манию!");
-                Events[playerid][2] = 1;
+                Events[playerid][2] = true;
                 ResetPlayerWeapons(playerid);
-                Teleport(playerid, -73.3284, 6229.2837, 10.8348, 200, 0, 1, 175.1361);
+                Teleport(playerid, -73.3284, 6229.2837, 10.8348, 200, 0, true, 175.1361);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Пройди лабиринт и получи {CCFF00}приз!");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Если вы захотите выйти, введите команду {CCFF00}/exit");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для перезапуска уровня введите команду {CCFF00}/restart");
@@ -10197,10 +10192,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             case 0:
             {
                 dmzone[playerid] = 1;
-                Teleport(playerid, DMZONESTELEPORTS[randomzone[0]][0], DMZONESTELEPORTS[randomzone[0]][1], DMZONESTELEPORTS[randomzone[0]][2], 100, 0, 0, DMZONESTELEPORTS[randomzone[0]][3], false); //DM зона 2
+                Teleport(playerid, DMZONESTELEPORTS[randomzone[0]][0], DMZONESTELEPORTS[randomzone[0]][1], DMZONESTELEPORTS[randomzone[0]][2], 100, 0, false, DMZONESTELEPORTS[randomzone[0]][3], false); //DM зона 2
                 ResetPlayerWeapons(playerid);//отобрать оружие
-                GivePlayerWeapon(playerid, 24, 2000);//заполнение слотов оружия игрока перед DM
-                if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
+                GivePlayerWeapon(playerid, WEAPON_DEAGLE, 2000);//заполнение слотов оружия игрока перед DM
+                // if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
                 if (GetPVarInt(playerid, "goodspawn") == 1)
                 {
                     SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Режим бессмертия деактивирован на дм. Чтобы активировать выйдите из ДМ {CCFF00}( /dmexit )");
@@ -10214,10 +10209,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             case 1:
             {
                 dmzone[playerid] = 2;
-                Teleport(playerid, DMZONESTELEPORTS[randomzone[1]][0], DMZONESTELEPORTS[randomzone[1]][1], DMZONESTELEPORTS[randomzone[1]][2], 101, 0, 0, DMZONESTELEPORTS[randomzone[1]][3], false); //DM зона 2
+                Teleport(playerid, DMZONESTELEPORTS[randomzone[1]][0], DMZONESTELEPORTS[randomzone[1]][1], DMZONESTELEPORTS[randomzone[1]][2], 101, 0, false, DMZONESTELEPORTS[randomzone[1]][3], false); //DM зона 2
                 ResetPlayerWeapons(playerid);//отобрать оружие
-                GivePlayerWeapon(playerid, 24, 2000);//заполнение слотов оружия игрока перед DM
-                if (GetCbugAllowed(playerid))SetCbugAllowed(false, playerid);
+                GivePlayerWeapon(playerid, WEAPON_DEAGLE, 2000);//заполнение слотов оружия игрока перед DM
+                // if (GetCbugAllowed(playerid))SetCbugAllowed(false, playerid);
                 if (GetPVarInt(playerid, "goodspawn") == 1)
                 {
                     SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Режим бессмертия деактивирован на дм. Чтобы активировать выйдите из ДМ {CCFF00}( /dmexit )");
@@ -10238,77 +10233,77 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             case 0:
             {
-                Teleport(playerid, -975.975708, 1060.983032, 1345.671875, 0, 10, 0, 0, false);
+                Teleport(playerid, -975.975708, 1060.983032, 1345.671875, 0, 10, false, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на RC Battlefield");
             }
             case 1:
             {
-                Teleport(playerid, -1398.065307, -217.028900, 1051.115844, 0, 7, 0, 0, false);
+                Teleport(playerid, -1398.065307, -217.028900, 1051.115844, 0, 7, false, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на 8-Track");
             }
             case 2:
             {
-                Teleport(playerid, -1398.103515, 937.631164, 1036.479125, 0, 15, 0, 0, false);
+                Teleport(playerid, -1398.103515, 937.631164, 1036.479125, 0, 15, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Bloodbowl");
             }
             case 3:
             {
-                Teleport(playerid, -1444.645507, -664.526000, 1053.572998, 0, 4, 0, 0, false);
+                Teleport(playerid, -1444.645507, -664.526000, 1053.572998, 0, 4, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Dirt track");
             }
             case 4:
             {
-                Teleport(playerid, -1465.268676, 1557.868286, 1052.531250, 0, 14, 0, 0, false);
+                Teleport(playerid, -1465.268676, 1557.868286, 1052.531250, 0, 14, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Kickstart");
             }
             case 5:
             {
-                Teleport(playerid, -1401.829956, 107.051300, 1032.273437, 0, 1, 0, 0, false);
+                Teleport(playerid, -1401.829956, 107.051300, 1032.273437, 0, 1, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Vice stadium");
             }
             case 6:
             {
-                Teleport(playerid, 1710.433715, -1669.379272, 20.225049, 0, 18, 0, 0, false);
+                Teleport(playerid, 1710.433715, -1669.379272, 20.225049, 0, 18, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на LS Atruim");
             }
             case 7:
             {
-                Teleport(playerid, 1494.325195, 1304.942871, 1093.289062, 0, 3, 0, 0, false);
+                Teleport(playerid, 1494.325195, 1304.942871, 1093.289062, 0, 3, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Bike School");
             }
             case 8:
             {
-                Teleport(playerid, 346.870025, 309.259033, 999.155700, 0, 6, 0, 0, false);
+                Teleport(playerid, 346.870025, 309.259033, 999.155700, 0, 6, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Millie room");
             }
             case 9:
             {
-                Teleport(playerid, 322.197998, 302.497985, 999.148437, 0, 5, 0, 0, false);
+                Teleport(playerid, 322.197998, 302.497985, 999.148437, 0, 5, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Barbara room");
             }
             case 10:
             {
-                Teleport(playerid, 302.180999, 300.722991, 999.148437, 0, 4, 0, 0, false);
+                Teleport(playerid, 302.180999, 300.722991, 999.148437, 0, 4, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Michelle room");
             }
             case 11:
             {
-                Teleport(playerid, -2159.122802, 641.517517, 1052.381713, 0, 1, 0, 0, false);
+                Teleport(playerid, -2159.122802, 641.517517, 1052.381713, 0, 1, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Woozie's office");
             }
             case 12:
             {
-                Teleport(playerid, 963.418762, 2108.292480, 1011.030273, 0, 1, 0, 0, false);
+                Teleport(playerid, 963.418762, 2108.292480, 1011.030273, 0, 1, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Meat factory");
             }
             case 13:
             {
-                Teleport(playerid, 291.282989, 310.031982, 999.148437, 0, 3, 0, 0, false);
+                Teleport(playerid, 291.282989, 310.031982, 999.148437, 0, 3, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Helena room");
             }
             case 14:
             {
-                Teleport(playerid, -959.564392, 1848.576782, 9.000000, 0, 17, 0, 0, false);
+                Teleport(playerid, -959.564392, 1848.576782, 9.000000, 0, 17, false, 0, false);
                 SendClientMessage(playerid, 0xFFCC2299, "{8F30E4}"NS" {FFFFFF}Вы телепортировались на Sherman dam");
             }
         }
@@ -10321,42 +10316,42 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             case 0:
             {
-                Teleport(playerid, -316.5466, 1527.2990, 75.3594, 0, 0, 1, 0, false);
+                Teleport(playerid, -316.5466, 1527.2990, 75.3594, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 1 {CCFF00}Ухо");
             }
             case 1:
             {
-                Teleport(playerid, -1206.1106, -1065.6787, 128.2656, 0, 0, 1, 292.8400, false);
+                Teleport(playerid, -1206.1106, -1065.6787, 128.2656, 0, 0, true, 292.8400, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 2 {CCFF00}Ферма");
             }
             case 2:
             {
-                Teleport(playerid, 4265.1406, -2675.1047, 2456.1873, 0, 0, 1, 0);
+                Teleport(playerid, 4265.1406, -2675.1047, 2456.1873, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 3 {CCFF00}Спираль");
             }
             case 3:
             {
-                Teleport(playerid, -2427.8813, -602.4962, 132.5571, 0, 0, 1, 345.2981, false);
+                Teleport(playerid, -2427.8813, -602.4962, 132.5571, 0, 0, true, 345.2981, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 4 {CCFF00}Холм СФ");
             }
             case 4:
             {
-                Teleport(playerid, -2617.3147, 1473.1395, 5.1810, 0, 0, 1, 0);
+                Teleport(playerid, -2617.3147, 1473.1395, 5.1810, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 5 {CCFF00}Джизи");
             }
             case 5:
             {
-                Teleport(playerid, -1756.2253, 911.7255, 24.4534, 0, 0, 1, 86.5652, false);
+                Teleport(playerid, -1756.2253, 911.7255, 24.4534, 0, 0, true, 86.5652, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 6 {CCFF00}Банк СФ");
             }
             case 6:
             {
-                Teleport(playerid, 1147.8661, 1343.8909, 10.8203, 0, 0, 1, 173.6521, false);
+                Teleport(playerid, 1147.8661, 1343.8909, 10.8203, 0, 0, true, 173.6521, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 7 {CCFF00}Учебка ЛВ");
             }
             case 7:
             {
-                Teleport(playerid, -2042.9257, -92.4866, 35.1718, 0, 0, 1, 163.7693, false);
+                Teleport(playerid, -2042.9257, -92.4866, 35.1718, 0, 0, true, 163.7693, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRIFT 8 {CCFF00}Учебка СФ");
             }
         }
@@ -10369,12 +10364,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             case 0:
             {
-                Teleport(playerid, 481.4691, 6112.1436, 10.9723, 0, 0, 1, -90.0000);
+                Teleport(playerid, 481.4691, 6112.1436, 10.9723, 0, 0, true, -90.0000);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRAG 1");
             }
             case 1:
             {
-                Teleport(playerid, -199.3756, -2292.5520, 29.7752, 0, 0, 1, 0);
+                Teleport(playerid, -199.3756, -2292.5520, 29.7752, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на DRAG 2");
             }
         }
@@ -10388,61 +10383,61 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             case 0:
             {
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в лабиринт");
-                Events[playerid][0] = 1;
+                Events[playerid][0] = true;
                 ResetPlayerWeapons(playerid);
-                Teleport(playerid, -2841.3599, 2744.9304, 907.7618, 200, 0, 0, 78.4971);
+                Teleport(playerid, -2841.3599, 2744.9304, 907.7618, 200, 0, false, 78.4971);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Пройди лабиринт и получи {CCFF00}приз!");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Если вы захотите выйти, введите команду {CCFF00}/exit");
             }
             case 1:
             {
-                Teleport(playerid, 2196.4915, -1369.0096, 25.6752, 0, 0, 0, 0, false);
+                Teleport(playerid, 2196.4915, -1369.0096, 25.6752, 0, 0, false, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в Кафе-Бар");
             }
             case 2:
             {
-                Teleport(playerid, 389.4658, 2536.6455, 16.5391, 0, 0, 1, 186.8829, false);
+                Teleport(playerid, 389.4658, 2536.6455, 16.5391, 0, 0, true, 186.8829, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на заброшку");
             }
             case 3:
             {
-                Teleport(playerid, -2883.1201, -3080.0908, 79.6467, 0, 0, 1, 0);
+                Teleport(playerid, -2883.1201, -3080.0908, 79.6467, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на мото паркур");
             }
             case 4:
             {
-                Teleport(playerid, -2845.8704, 2191.0735, 799.5980, 0, 0, 1, 0);
+                Teleport(playerid, -2845.8704, 2191.0735, 799.5980, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на развлекательную трассу");
             }
             case 5:
             {
-                Teleport(playerid, 377.9786, -82.6489, 558.4254, 0, 0, 1, 0);
+                Teleport(playerid, 377.9786, -82.6489, 558.4254, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на развлекательную трассу 2");
             }
             case 6:
             {
-                Teleport(playerid, 2360.1272, 903.1658, 190.0055, 0, 0, 1, 0);
+                Teleport(playerid, 2360.1272, 903.1658, 190.0055, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на мегатрассу");
             }
             case 7:
             {
-                Teleport(playerid, 2817.0566, 218.0950, 12.2437, 0, 0, 1, 0);
+                Teleport(playerid, 2817.0566, 218.0950, 12.2437, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на мегатрассу 2");
             }
             case 8:
             {
-                Teleport(playerid, 2979.9561, -51.7832, 1.6647, 0, 0, 1, 0);
+                Teleport(playerid, 2979.9561, -51.7832, 1.6647, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на мегатрассу 3");
             }
             case 9:
             {
-                Teleport(playerid, -275.0087, -632.9040, 16500.8613, 0, 0, 0, 0);
+                Teleport(playerid, -275.0087, -632.9040, 16500.8613, 0, 0, false, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Jumping");
-                GivePlayerWeapon(playerid, 46, 50);
+                GivePlayerWeapon(playerid, WEAPON_PARACHUTE, 50);
             }
             case 10:
             {
-                Teleport(playerid, 2032.9824, 1009.1404, 10.4769, 0, 0, 1, 0, false);
+                Teleport(playerid, 2032.9824, 1009.1404, 10.4769, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались к Казино 4 дракона");
             }
         }
@@ -10455,72 +10450,72 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             case 0:
             {
-                Teleport(playerid, 279.4141, -1830.2559, 3.8216, 0, 0, 1, 0, false);
+                Teleport(playerid, 279.4141, -1830.2559, 3.8216, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на пляж");
             }
             case 1:
             {
-                Teleport(playerid, -2310.0208, -1654.1530, 483.6927, 0, 0, 1, 0, false);
+                Teleport(playerid, -2310.0208, -1654.1530, 483.6927, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Гору Чиллиад");
             }
             case 2:
             {
-                Teleport(playerid, -2633.9934, 1357.6862, 7.1182, 0, 0, 1, 0, false);
+                Teleport(playerid, -2633.9934, 1357.6862, 7.1182, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в Клуб Джиззи");
             }
             case 3:
             {
-                Teleport(playerid, 2495.7825, -1668.8549, 13.3438, 0, 0, 1, 0, false);
+                Teleport(playerid, 2495.7825, -1668.8549, 13.3438, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Грув");
             }
             case 4:
             {
-                Teleport(playerid, 1245.1860, -761.4305, 92.6917, 0, 0, 1, 0, false);
+                Teleport(playerid, 1245.1860, -761.4305, 92.6917, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Гору Вайнвуд");
             }
             case 5:
             {
-                Teleport(playerid, -113.16453552, 583.32196045, 3.14548969, 0, 0, 1, 0, false);
+                Teleport(playerid, -113.16453552, 583.32196045, 3.14548969, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Форт Карсон");
             }
             case 6:
             {
-                Teleport(playerid, 1546.9347, -1362.5142, 329.6690, 0, 0, 1, 0, false);
+                Teleport(playerid, 1546.9347, -1362.5142, 329.6690, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Небоскрёб");
             }
             case 7:
             {
-                Teleport(playerid, 1485.3896, 2829.3538, 10.8203, 0, 0, 1, 0);
+                Teleport(playerid, 1485.3896, 2829.3538, 10.8203, 0, 0, true, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в Зону домов");
             }
             case 8:
             {
-                Teleport(playerid, 1531.3895, -1012.2684, 24.0801, 0, 0, 1, 0, false);
+                Teleport(playerid, 1531.3895, -1012.2684, 24.0801, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Стоянку LS");
             }
             case 9:
             {
-                Teleport(playerid, 1439.16, -2593.23, 13.55, 0, 0, 1, 0, false);
+                Teleport(playerid, 1439.16, -2593.23, 13.55, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Взлётку LS");
             }
             case 10:
             {
-                Teleport(playerid, -1653.02, -224.51, 14.14, 0, 0, 1, 0, false);
+                Teleport(playerid, -1653.02, -224.51, 14.14, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Взлётку SF");
             }
             case 11:
             {
-                Teleport(playerid, 1309.9388, 1621.3625, 10.82, 0, 0, 1, 0, false);
+                Teleport(playerid, 1309.9388, 1621.3625, 10.82, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались на Взлётку LV");
             }
             case 12:
             {
-                Teleport(playerid, 561.299194, -383.106476, 1001.445923, 0, 0, 0, 0);
+                Teleport(playerid, 561.299194, -383.106476, 1001.445923, 0, 0, false, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в Advanced Club");
             }
             case 13:
             {
-                Teleport(playerid, 1537.8400, -1361.7784, 277.9537, 0, 0, 0, 0);
+                Teleport(playerid, 1537.8400, -1361.7784, 277.9537, 0, 0, false, 0);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в Хату Админа");
             }
         }
@@ -10533,32 +10528,32 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             case 0:
             {
-                Teleport(playerid, 1471.9987, -1865.0195, 13.5469, 0, 0, 1, 0, false);
+                Teleport(playerid, 1471.9987, -1865.0195, 13.5469, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в лос сантос");
             }
             case 1:
             {
-                Teleport(playerid, 2095.0520, 1227.7006, 10.4047, 0, 0, 1, 0, false);
+                Teleport(playerid, 2095.0520, 1227.7006, 10.4047, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в лас вентурас");
             }
             case 2:
             {
-                Teleport(playerid, -1983.8186, 129.2735, 27.6875, 0, 0, 1, 0, false);
+                Teleport(playerid, -1983.8186, 129.2735, 27.6875, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в сан фиерро");
             }
             case 3:
             {
-                Teleport(playerid, 220.6275, 25.1140, 2.5781, 0, 0, 1, 0, false);
+                Teleport(playerid, 220.6275, 25.1140, 2.5781, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в Blueberty");
             }
             case 4:
             {
-                Teleport(playerid, -250.4078, 2603.5881, 62.8582, 0, 0, 1, 0, false);
+                Teleport(playerid, -250.4078, 2603.5881, 62.8582, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы телепортировались в Martin bridge");
             }
             case 5:
             {
-                Teleport(playerid, -887.0754, 2752.4055, 46.0000, 0, 0, 1, 0, false);
+                Teleport(playerid, -887.0754, 2752.4055, 46.0000, 0, 0, true, 0, false);
                 SendClientMessage(playerid, COLOR_VIOLET, "ы"NS" {FFFFFF}Вы телепортировались в Rosselmash");
             }
         }
@@ -10585,7 +10580,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             if (listitem == 2)
             {
-                ShowPlayerDialog(playerid, 302, 0, "Выбор клавиши меню", "Выберите, на какую кнопку будете открывать меню и активировать пикапы", "ALT (2 in car)", "Y");
+                ShowPlayerDialog(playerid, 302, DIALOG_STYLE_MSGBOX, "Выбор клавиши меню", "Выберите, на какую кнопку будете открывать меню и активировать пикапы", "ALT (2 in car)", "Y");
                 return 1;
             }
         }
@@ -10615,7 +10610,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         if (GetPVarInt(playerid, "MnMode") == 0)
         {
-            ShowPlayerDialog(playerid, 302, 0, "{8F30E4}>>[Выбор клавиши меню]<<", "{FFFFFF}Выберите, на какую кнопку будете открывать {8F30E4}меню {FFFFFF}и {8F30E4}активировать пикапы", "{CCFF00}ALT/2", "{FF0000}Y");
+            ShowPlayerDialog(playerid, 302, DIALOG_STYLE_MSGBOX, "{8F30E4}>>[Выбор клавиши меню]<<", "{FFFFFF}Выберите, на какую кнопку будете открывать {8F30E4}меню {FFFFFF}и {8F30E4}активировать пикапы", "{CCFF00}ALT/2", "{FF0000}Y");
         }
         return 1;
     }
@@ -10646,7 +10641,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 ShowPlayerDialog(playerid, 301, DIALOG_STYLE_TABLIST_HEADERS, "Сменить спавн", string, "СМЕНИТЬ", "ОТМЕНА");//смена спавна //pSpawnChange
                 return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не в клане!");
             }
-            else if ((GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0] && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2]) == 0)
+            else if (GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0] == 0.0000
+			&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] == 0.0000
+			&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2] == 0.0000)
             {
                 return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У клана нет сохранённой точки спавна!");
             }
@@ -10746,7 +10743,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             {
                 salt[i] = inc_gLetters[random(sizeof(inc_gLetters))];
             }
-            SHA256_PassHash(inputtext, salt, hashed_pass, 65);
+            SHA256_Hash(inputtext, salt, hashed_pass, 65);
             new str[512];
             mysql_format(ServerDB, str, sizeof(str), "UPDATE `players` SET `Pass`='%s', `HASH`='%e' WHERE `PID`='%d' LIMIT 1", hashed_pass, salt, PlayerInfo[playerid][pMID]);
             mysql_tquery(ServerDB, str, "", "");
@@ -10940,20 +10937,20 @@ fpub:Drift()
             new targetaim = GetPlayerTargetPlayer(g);
             if (targetaim != INVALID_PLAYER_ID)
             {
-                if (gPlayerSpawned[targetaim] == true && GetPVarInt(targetaim, "goodspawn") == 1)
+                if (gPlayerSpawned[targetaim] && GetPVarInt(targetaim, "goodspawn") == 1)
                 {
                     if (!IsPlayerInAnyVehicle(g) && !IsPlayerInAnyVehicle(targetaim))
                     {
-                        if (GetPlayerWeapon(g) == 4)
+                        if (GetPlayerWeapon(g) == WEAPON_KNIFE)
                         {
-                            SetPlayerArmedWeapon(g, 0);
+                            SetPlayerArmedWeapon(g, WEAPON_FIST);
                             SendClientMessage(g, COLOR_VIOLET, ""NS" {FFFFFF}Нельзя убить игрока ножом, он в бессмертии{FF0000}!");
                         }
                     }
                 }
             }
 
-            if (GetPVarInt(g, "goodspawn") == 1 && gPlayerLogged[g] == 1)
+            if (GetPVarInt(g, "goodspawn") == 1 && gPlayerLogged[g])
             {
                 SetPlayerHealth(g, 100);
                 SetPlayerArmour(g, 100);
@@ -11013,7 +11010,7 @@ fpub:Drift()
             ppos[g][1] = y333;
             ppos[g][2] = z333;
 
-            if (gPlayerLogged[g] == 1)
+            if (gPlayerLogged[g])
             {
                 ResetPlayerMoney(g);//обнуляем мониторинг денег
                 GivePlayerMoney(g, GetPVarInt(g, "PlMon"));//передаём в мониторинг деньги игрока
@@ -11201,7 +11198,8 @@ public VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
 {
     new Float:x, Float:y, Float:z, Float:Angle;
     GetPlayerPos(playerid, x, y, z);
-    if (GetPlayerState(playerid) == 2 || GetPlayerState(playerid) == 3)
+    if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER
+	|| GetPlayerState(playerid) == PLAYER_STATE_PASSENGER)
     {
         GetVehicleZAngle(GetPlayerVehicleID(playerid), Angle);
     }
@@ -11488,22 +11486,30 @@ stock OneSecOnd()
         if (IsPlayerConnected(i)) //дальнейшее выполняем если игрок в коннекте
         {
 
-            if (GetPlayerWeapon(i) == 38 || GetPlayerWeapon(i) == 16 || GetPlayerWeapon(i) == 18 || GetPlayerWeapon(i) == 45 || GetPlayerWeapon(i) == 39 || GetPlayerWeapon(i) == 37 || GetPlayerWeapon(i) == 36 || GetPlayerWeapon(i) == 35 && (AI[i][aLevel] < 1))
+            if (GetPlayerWeapon(i) == WEAPON_MINIGUN
+			|| GetPlayerWeapon(i) == WEAPON_GRENADE
+			|| GetPlayerWeapon(i) == WEAPON_MOLOTOV
+			|| GetPlayerWeapon(i) == WEAPON_THERMAL_GOGGLES
+			|| GetPlayerWeapon(i) == WEAPON_SATCHEL
+			|| GetPlayerWeapon(i) == WEAPON_FLAMETHROWER
+			|| GetPlayerWeapon(i) == WEAPON_HEATSEEKER
+			|| GetPlayerWeapon(i) == WEAPON_ROCKETLAUNCHER
+			&& (AI[i][aLevel] < 1))
             {
                 ResetPlayerWeapons(i);
                 format(string, sizeof(string), "[Anti-Cheat]: {FFFFFF}Игрок {CCFF00}%s {FFFFFF}был кикнут за запрещённое оружие!", PlayerInfo[i][pName]);
                 SendClientMessage(i, COLOR_RED, string);
                 SendAdminMessage(COLOR_RED, string);
-                for (new f; f < 26; f++) gPlayerWeapon[i][f] = 0;
+                for (new f; f < 26; f++) gPlayerWeapon[i][f] = WEAPON_FIST;
                 Kick(i);
             }
 
-            if (gPlayerLogged[i] == 1 && gPlayerSpawned[i]) //сейвим оружие
+            if (gPlayerLogged[i] && gPlayerSpawned[i]) //сейвим оружие
             {
-                if (dmzone[i] == 0 && (Events[i][0] && Events[i][1] && Events[i][2] && Events[i][3]) == 0 && Prison[i] <= 0)
+                if (dmzone[i] == 0 && !(Events[i][0] && Events[i][1] && Events[i][2] && Events[i][3]) && Prison[i] <= 0)
                 {
                     new strw[256];
-                    for (new w; w < 13; w++) GetPlayerWeaponData(i, w, gPlayerWeapon[i][w], gPlayerWeapon[i][w + 13]);
+                    for (new w; w < 13; w++) GetPlayerWeaponData(i, WEAPON_SLOT:w, gPlayerWeapon[i][w], gPlayerWeapon[i][w + 13]);
                     for (new w; w < 25; w++) format(strw, sizeof(strw), "%s%d|", strw, gPlayerWeapon[i][w]);
                     format(strw, sizeof(strw), "%s%d", strw, gPlayerWeapon[i][25]);
                     sscanf(strw, "s[128]", gPlayerLastStateWeapon[i]);
@@ -11590,11 +11596,11 @@ stock OneSecOnd()
                 return 1;
             }
 
-            if (gPlayerSpawned[i] == 1) //если игрок заспавнился,
+            if (gPlayerSpawned[i]) //если игрок заспавнился,
             {
                 for (new j = 0; j < 13; j++) //сохраняем все слоты
                 {
-                    GetPlayerWeaponData(i, j, playweap[i][j], playammo[i][j]);
+                    GetPlayerWeaponData(i, WEAPON_SLOT:j, playweap[i][WEAPON_SLOT:j], playammo[i][WEAPON_SLOT:j]);
                 }
             }
             if (StopHidrav[i] > 0) //если переменная задержки гидравлики > 0, то:
@@ -11640,7 +11646,7 @@ public MinServ()//таймер минут на сервере
 {
     foreach (Player, i)
     {
-        if (IsPlayerConnected(i) && gPlayerLogged[i] == 1)
+        if (IsPlayerConnected(i) && gPlayerLogged[i])
         {
             PlayerInfo[i][pMinlog]++;
             OnPlayerSave(i);
@@ -11682,7 +11688,7 @@ stock RepairCar()
     {
         if (IsPlayerConnected(i))
         {
-            if (autorepair[i] == 1 && GetPlayerState(i) == 2)
+            if (autorepair[i] && GetPlayerState(i) == PLAYER_STATE_DRIVER)
             {
                 new car = GetPlayerVehicleID(i);
                 RepairVehicle(car);
@@ -11727,7 +11733,7 @@ fpub:InpTxtControl(string[])//контроль вводимого текста на посторонние символы
 
 public OnPlayerCommandReceived(playerid, cmd[], params[], flags)
 {
-    if (gPlayerLogged[playerid] == 0)
+    if (!gPlayerLogged[playerid])
     {
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не авторизировались!");
         return 0;
@@ -11907,7 +11913,7 @@ CMD:cmd(playerid)
     strcat(string, "{CCFF00}> {FFFFFF}/s - Сохранить позицию\r\n");
     strcat(string, "{CCFF00}> {FFFFFF}/t - Телепортироваться на позицию\r\n");
     strcat(string, "{CCFF00}> {FFFFFF}/getv - Телепортировать арендованый транспорт к себе\r\n");
-    ShowPlayerDialog(playerid, DIALOG_ZERO, 0, "Помощь по командам", string, "OK", "");
+    ShowPlayerDialog(playerid, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, "Помощь по командам", string, "OK", "");
     return 1;
 }
 
@@ -12240,7 +12246,7 @@ CMD:dmexit(playerid)
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
     if (dmzone[playerid] != 0)
     {
-        if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
+        // if (!GetCbugAllowed(playerid))SetCbugAllowed(true, playerid);
         dmzone[playerid] = 0;
         SpawnPlayer(playerid);
         dmkills[playerid] = 0;
@@ -12320,22 +12326,18 @@ stock Teleport(playerid, Float:x, Float:y, Float:z, vw, int, bool:incar, Float:a
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
     tpdrift[playerid] = 1;
-    if (incar != 1)
-    {
+    if (!incar){
         SetPlayerInterior(playerid, int);
         SetPlayerVirtualWorld(playerid, vw);
         SetPlayerPos(playerid, Float:x, Float:y, Float:z);
         SetPlayerFacingAngle(playerid, anglee);
-    }
-    else if (GetPlayerState(playerid) == 2)
+    }else if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
     {
         new VID = GetPlayerVehicleID(playerid);
         SetVehicleVirtualWorld(VID, vw) ;
         SetVehiclePos(VID, x, y, z);
         SetVehicleZAngle(VID, anglee);
-    }
-    else
-    {
+    }else{
         SetPlayerInterior(playerid, int);
         SetPlayerVirtualWorld(playerid, vw);
         SetPlayerPos(playerid, Float:x, Float:y, Float:z);
@@ -12346,8 +12348,8 @@ stock Teleport(playerid, Float:x, Float:y, Float:z, vw, int, bool:incar, Float:a
     if (freeze == true)
     {
         Streamer_UpdateEx(playerid, Float:x, Float:y, Float:z, vw, int);
-        TogglePlayerControllable(playerid, 0);
-        SetTimerEx("Freeze1sec", 1000, 0, "i", playerid);
+        TogglePlayerControllable(playerid, false);
+        SetTimerEx("Freeze1sec", 1000, false, "i", playerid);
     }
     foreach (Player, i)
     {
@@ -12539,7 +12541,7 @@ EnterHouse(playerid, hid, bool:type = true)
         /*SetPlayerInterior(playerid, gHousesSetting[HouseInfo[hid][hInt]][g_hInt]);
         SetPlayerPos(playerid, gHousesSetting[HouseInfo[hid][hInt]][g_hCoordX], gHousesSetting[HouseInfo[hid][hInt]][g_hCoordY], gHousesSetting[HouseInfo[hid][hInt]][g_hCoordZ]);*/
 
-        Teleport(playerid, gHousesSetting[HouseInfo[hid][hInt]][g_hCoordX], gHousesSetting[HouseInfo[hid][hInt]][g_hCoordY], gHousesSetting[HouseInfo[hid][hInt]][g_hCoordZ], HouseInfo[hid][hID], gHousesSetting[HouseInfo[hid][hInt]][g_hInt], 0, 0, false);
+        Teleport(playerid, gHousesSetting[HouseInfo[hid][hInt]][g_hCoordX], gHousesSetting[HouseInfo[hid][hInt]][g_hCoordY], gHousesSetting[HouseInfo[hid][hInt]][g_hCoordZ], HouseInfo[hid][hID], gHousesSetting[HouseInfo[hid][hInt]][g_hInt], false, 0.0000, false);
     }
 }
 // The end functions of houses
@@ -12639,7 +12641,7 @@ CMD:s(playerid)
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
     if (job[playerid] > 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
     if (dmzone[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для начала уйдите с дм зоны! {CCFF00}( /dmexit )");
-    if (gPlayerSpawned[playerid] == 0) //игрок НЕ заспавнился
+    if (!gPlayerSpawned[playerid]) //игрок НЕ заспавнился
     {
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для начала заспавнись!");
         return 1;
@@ -12664,7 +12666,7 @@ CMD:t(playerid)
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
     if (job[playerid] > 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
     if (dmzone[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для начала уйдите с дм зоны! {CCFF00}( /dmexit )");
-    if (gPlayerSpawned[playerid] == 0) //игрок НЕ заспавнился
+    if (!gPlayerSpawned[playerid]) //игрок НЕ заспавнился
     {
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для начала заспавнись!");
         return 1;
@@ -12868,7 +12870,7 @@ stock PayDay(h, m)
             {
                 foreach (Player, p)
                 {
-                    if (BI[i][BuyID] == PlayerInfo[p][pMID] && gPlayerLogged[p] == 1)
+                    if (BI[i][BuyID] == PlayerInfo[p][pMID] && gPlayerLogged[p])
                     {
                         on[i] = true;
                         idbussinesbuyer[p] = true;
@@ -12891,7 +12893,7 @@ stock PayDay(h, m)
         }
         foreach (Player, p)
         {
-            if (gPlayerLogged[p] == 1)
+            if (gPlayerLogged[p])
             {
                 if (idbussinesbuyer[p] == true)
                 {
@@ -12943,7 +12945,7 @@ CMD:admh(playerid)
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
     if (AI[playerid][aLevel] < 1) return 1;
-    Teleport(playerid, -2876.4460, 2685.8120, 273.1059, 0, 0, 0, 68.1739);
+    Teleport(playerid, -2876.4460, 2685.8120, 273.1059, 0, 0, false, 68.1739);
     SendClientMessage(playerid, COLOR_VIOLET, "Добро пожаловать в админ рай!");
     return 1;
 }
@@ -13034,8 +13036,8 @@ CMD:accept(playerid)
                 ResetPlayerWeapons(playerid);
                 SetCameraBehindPlayer(playerid);
 
-                TogglePlayerControllable(playerid, 0);
-                TogglePlayerControllable(PID, 0);
+                TogglePlayerControllable(playerid, false);
+                TogglePlayerControllable(PID, false);
                 SetPlayerFacingAngle(PID, 177.1250);
                 SetPlayerPos(PID, -855.6653, 3024.7839, 5044.3223 + 2);
                 SetPlayerFacingAngle(playerid, 3.4167);
@@ -13059,7 +13061,7 @@ CMD:accept(playerid)
     return 1;
 }
 
-stock PrepareDuelWeapon(playerid, weaponid)
+stock PrepareDuelWeapon(playerid, WEAPON:weaponid)
 {
     new PID = Duelopponent[playerid];
     if (Duel[PID] >= 1) return SendClientMessage(playerid, COLOR_VIOLET, "[DUEL]: {FFFFFF}Игрок ранее был на дуэле.");
@@ -13075,7 +13077,7 @@ stock PrepareDuelWeapon(playerid, weaponid)
     return 1;
 }
 
-stock PrepareDuelWeapon2(playerid, weaponid)
+stock PrepareDuelWeapon2(playerid, WEAPON:weaponid)
 {
     new PID = Duelopponent[playerid];
     Duelweap2[playerid] = weaponid;
@@ -13156,7 +13158,7 @@ fpub:UnnormalDuelend(playerid)
 
 fpub:DuelStart(playerid)
 {
-    TogglePlayerControllable(playerid, 1);
+    TogglePlayerControllable(playerid, true);
     GameTextForPlayer(playerid, "~b~GO GO GO", 3000, 4);
     PlayerPlaySound(playerid, 1057, 0.0, 0.0, 0.0);
     return 1;
@@ -13173,8 +13175,8 @@ fpub:DelayedDuelSpawn(playerid)
         format(string, sizeof(string), "[DUEL]: {CCFF00}%s {FFFFFF}vs {CCFF00}%s. {FFFFFF}Оружие: {CCFF00}%s, %s {FFFFFF}Ставка: {CCFF00}$%d", PlayerInfo[playerid][pName], PlayerInfo[PID][pName], Weaponname, Weaponname2, Duelbet[playerid]);
         SendClientMessageToAll(COLOR_VIOLET, string);
 
-        TogglePlayerControllable(playerid, 0);
-        TogglePlayerControllable(PID, 0);
+        TogglePlayerControllable(playerid, false);
+        TogglePlayerControllable(PID, false);
         SetPlayerFacingAngle(PID, 177.1250);
         SetPlayerPos(PID, -855.6653, 3024.7839, 5044.3223 + 2);
         SetPlayerFacingAngle(playerid, 3.4167);
@@ -13200,8 +13202,8 @@ fpub:DelayedDuelSpawn(playerid)
         format(string, sizeof(string), "[DUEL]: {CCFF00}%s {FFFFFF}vs {CCFF00}%s. {FFFFFF}Оружие: {CCFF00}%s, %s {FFFFFF}Ставка: {CCFF00}$%d", PlayerInfo[playerid][pName], PlayerInfo[PID][pName], Weaponname, Weaponname2, Duelbet[PID]);
         SendClientMessageToAll(COLOR_VIOLET, string);
 
-        TogglePlayerControllable(playerid, 0);
-        TogglePlayerControllable(PID, 0);
+        TogglePlayerControllable(playerid, false);
+        TogglePlayerControllable(PID, false);
         SetPlayerFacingAngle(PID, 177.1250);
         SetPlayerPos(PID, -855.6653, 3024.7839, 5044.3223 + 2);
         SetPlayerFacingAngle(playerid, 3.4167);
@@ -13233,7 +13235,7 @@ fpub:DuelTimer(playerid)
 
 public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
 {
-    if (AI[playerid][aLevel] > 0) // Проверка на администратора (В данном случае Rcon)
+    if (AI[playerid][aLevel] > 0)
     {
         new Float:pos;
         if (MapAndreas_FindAverageZ(fX, fY, pos))
@@ -13256,76 +13258,76 @@ stock SelectAnimation(const playerid, const animation)
         case 1: SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE2);
         case 2: SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE3);
         case 3: SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE4);
-        case 4: ApplyAnimation(playerid, "DANCING", "DAN_Left_A", 4.1, 1, 0, 0, 0, 0, 0);
-        case 5: ApplyAnimation(playerid, "DANCING", "dnce_M_a", 4.1, 1, 0, 0, 0, 0, 0);
-        case 6: ApplyAnimation(playerid, "ON_LOOKERS", "wave_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 7: ApplyAnimation(playerid, "BEACH", "bather", 4.1, 1, 0, 0, 0, 0, 0);
-        case 8: ApplyAnimation(playerid, "ped", "WALK_drunk", 4.1, 1, 1, 1, 0, 0, 0);
-        case 9: ApplyAnimation(playerid, "ped", "Crouch_Roll_L", 4.1, 1, 1, 1, 0, 0, 0);
-        case 10: ApplyAnimation(playerid, "ped", "endchat_03", 4.1, 1, 0, 0, 0, 0, 0);
-        case 11: ApplyAnimation(playerid, "benchpress", "gym_bp_celebrate", 4.1, 1, 0, 0, 0, 0, 0);
-        case 12: ApplyAnimation(playerid, "ped", "cower", 4.1, 1, 0, 0, 0, 0, 0);
-        case 13: ApplyAnimation(playerid, "BOMBER", "BOM_Plant", 4.1, 0, 0, 0, 0, 0, 0);
-        case 14: ApplyAnimation(playerid, "SHOP", "ROB_Shifty", 4.1, 0, 0, 0, 0, 0, 0);
-        case 15: ApplyAnimation(playerid, "SHOP", "ROB_Loop_Threat", 4.1, 1, 0, 0, 0, 0, 0);
-        case 16: ApplyAnimation(playerid, "COP_AMBIENT", "Coplook_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 17: ApplyAnimation(playerid, "FOOD", "EAT_Vomit_P", 4.1, 0, 0, 0, 0, 0, 0);
-        case 18: ApplyAnimation(playerid, "FOOD", "EAT_Burger", 4.1, 0, 0, 0, 0, 0, 0);
-        case 19: ApplyAnimation(playerid, "SWEET", "sweet_ass_slap", 4.1, 0, 0, 0, 0, 0, 0);
-        case 20: ApplyAnimation(playerid, "DEALER", "DEALER_DEAL", 4.1, 0, 0, 0, 0, 0, 0);
-        case 21: ApplyAnimation(playerid, "CRACK", "crckdeth2", 4.1, 1, 0, 0, 0, 0, 0);
-        case 22: ApplyAnimation(playerid, "LOWRIDER", "M_smklean_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 23: ApplyAnimation(playerid, "LOWRIDER", "F_smklean_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 24: ApplyAnimation(playerid, "BEACH", "ParkSit_M_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 25: ApplyAnimation(playerid, "PARK", "Tai_Chi_Loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 26: ApplyAnimation(playerid, "BAR", "dnk_stndF_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 27: ApplyAnimation(playerid, "DANCING", "DAN_Right_A", 4.1, 1, 0, 0, 0, 0, 0);
-        case 28: ApplyAnimation(playerid, "BSKTBALL", "BBALL_def_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 29: ApplyAnimation(playerid, "MISC", "plyr_shkhead", 4.1, 0, 0, 0, 0, 0, 0);
-        case 30: ApplyAnimation(playerid, "BSKTBALL", "BBALL_idle", 4.1, 0, 0, 0, 0, 0, 0);
-        case 31: ApplyAnimation(playerid, "CAMERA", "camstnd_cmon", 4.1, 1, 0, 0, 0, 0, 0);
-        case 32: ApplyAnimation(playerid, "SHOP", "SHP_Rob_HandsUP", 4.1, 1, 0, 0, 0, 0, 0);
-        case 33: ApplyAnimation(playerid, "CRACK", "crckidle2", 4.1, 1, 0, 0, 0, 0, 0);
-        case 34: ApplyAnimation(playerid, "CRACK", "crckidle4", 4.1, 1, 0, 0, 0, 0, 0);
-        case 35: ApplyAnimation(playerid, "DEALER", "DEALER_IDLE", 4.1, 1, 0, 0, 0, 0, 0);
-        case 36: ApplyAnimation(playerid, "GANGS", "leanIDLE", 4.1, 1, 0, 0, 0, 0, 0);
-        case 37: ApplyAnimation(playerid, "GANGS", "shake_carSH", 4.1, 0, 0, 0, 0, 0, 0);
-        case 38: ApplyAnimation(playerid, "GANGS", "smkcig_prtl", 4.1, 0, 0, 0, 0, 0, 0);
-        case 39: ApplyAnimation(playerid, "BEACH", "ParkSit_W_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 40: ApplyAnimation(playerid, "INT_HOUSE", "LOU_Loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 41: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Bored_Loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 42: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Idle_Loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 43: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Type_Loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 44: ApplyAnimation(playerid, "INT_SHOP", "shop_shelf", 4.1, 1, 0, 0, 0, 0, 0);
-        case 45: ApplyAnimation(playerid, "JST_BUISNESS", "girl_02", 4.1, 1, 0, 0, 0, 0, 0);
-        case 46: ApplyAnimation(playerid, "KISSING", "GF_StreetArgue_02", 4.1, 0, 0, 0, 0, 0, 0);
-        case 47: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_01", 4.1, 0, 0, 0, 0, 0, 0);
-        case 48: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_02", 4.1, 0, 0, 0, 0, 0, 0);
-        case 49: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_03", 4.1, 0, 0, 0, 0, 0, 0);
-        case 50: ApplyAnimation(playerid, "LOWRIDER", "RAP_B_Loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 51: ApplyAnimation(playerid, "MEDIC", "CPR", 4.1, 1, 0, 0, 0, 0, 0);
-        case 52: ApplyAnimation(playerid, "MISC", "bitchslap", 4.1, 1, 0, 0, 0, 0, 0);
-        case 53: ApplyAnimation(playerid, "MISC", "bng_wndw", 4.1, 1, 0, 0, 0, 0, 0);
-        case 54: ApplyAnimation(playerid, "MISC", "KAT_Throw_K", 4.1, 0, 0, 0, 0, 0, 0);
-        case 55: ApplyAnimation(playerid, "MISC", "SEAT_LR", 4.1, 1, 0, 0, 0, 0, 0);
-        case 56: ApplyAnimation(playerid, "ped", "SEAT_idle", 4.1, 1, 0, 0, 0, 0, 0);
-        case 57: ApplyAnimation(playerid, "ON_LOOKERS", "lkup_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 58: ApplyAnimation(playerid, "ON_LOOKERS", "Pointup_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 59: ApplyAnimation(playerid, "ON_LOOKERS", "panic_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 60: ApplyAnimation(playerid, "ON_LOOKERS", "shout_02", 4.1, 1, 0, 0, 0, 0, 0);
-        case 61: ApplyAnimation(playerid, "PAULNMAC", "Piss_loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 62: ApplyAnimation(playerid, "GHANDS", "gsign1LH", 4.1, 1, 0, 0, 0, 0, 0);
-        case 63: ApplyAnimation(playerid, "ped", "IDLE_taxi", 4.1, 1, 0, 0, 0, 0, 0);
-        case 64: ApplyAnimation(playerid, "POLICE", "Door_Kick", 4.1, 0, 0, 0, 0, 0, 0);
-        case 65: ApplyAnimation(playerid, "POLICE", "CopTraf_Stop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 66: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY_B", 4.1, 1, 0, 0, 0, 0, 0);
-        case 67: ApplyAnimation(playerid, "LOWRIDER", "RAP_C_Loop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 68: ApplyAnimation(playerid, "SWAT", "gnstwall_injurd", 4.1, 1, 0, 0, 0, 0, 0);
-        case 69: ApplyAnimation(playerid, "SWEET", "Sweet_injuredloop", 4.1, 1, 0, 0, 0, 0, 0);
-        case 70: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY", 4.1, 1, 0, 0, 0, 0, 0);
-        case 71: ApplyAnimation(playerid, "GHANDS", "gsign2", 4.1, 1, 0, 0, 0, 0, 0);
-        case 72: ApplyAnimation(playerid, "GHANDS", "gsign4", 4.1, 1, 0, 0, 0, 0, 0);
-        case 73: ApplyAnimation(playerid, "GHANDS", "gsign5", 4.1, 1, 0, 0, 0, 0, 0);
+		case 4: ApplyAnimation(playerid, "DANCING", "DAN_Left_A", 4.1, true, false, false, false, false);
+		case 5: ApplyAnimation(playerid, "DANCING", "dnce_M_a", 4.1, true, false, false, false, false);
+		case 6: ApplyAnimation(playerid, "ON_LOOKERS", "wave_loop", 4.1, true, false, false, false, false);
+		case 7: ApplyAnimation(playerid, "BEACH", "bather", 4.1, true, false, false, false, false);
+		case 8: ApplyAnimation(playerid, "ped", "WALK_drunk", 4.1, true, true, true, false, false);
+		case 9: ApplyAnimation(playerid, "ped", "Crouch_Roll_L", 4.1, true, true, true, false, false);
+		case 10: ApplyAnimation(playerid, "ped", "endchat_03", 4.1, true, false, false, false, false);
+		case 11: ApplyAnimation(playerid, "benchpress", "gym_bp_celebrate", 4.1, true, false, false, false, false);
+		case 12: ApplyAnimation(playerid, "ped", "cower", 4.1, true, false, false, false, false);
+		case 13: ApplyAnimation(playerid, "BOMBER", "BOM_Plant", 4.1, false, false, false, false, false);
+		case 14: ApplyAnimation(playerid, "SHOP", "ROB_Shifty", 4.1, false, false, false, false, false);
+		case 15: ApplyAnimation(playerid, "SHOP", "ROB_Loop_Threat", 4.1, true, false, false, false, false);
+		case 16: ApplyAnimation(playerid, "COP_AMBIENT", "Coplook_loop", 4.1, true, false, false, false, false);
+		case 17: ApplyAnimation(playerid, "FOOD", "EAT_Vomit_P", 4.1, false, false, false, false, false);
+		case 18: ApplyAnimation(playerid, "FOOD", "EAT_Burger", 4.1, false, false, false, false, false);
+		case 19: ApplyAnimation(playerid, "SWEET", "sweet_ass_slap", 4.1, false, false, false, false, false);
+		case 20: ApplyAnimation(playerid, "DEALER", "DEALER_DEAL", 4.1, false, false, false, false, false);
+		case 21: ApplyAnimation(playerid, "CRACK", "crckdeth2", 4.1, true, false, false, false, false);
+		case 22: ApplyAnimation(playerid, "LOWRIDER", "M_smklean_loop", 4.1, true, false, false, false, false);
+		case 23: ApplyAnimation(playerid, "LOWRIDER", "F_smklean_loop", 4.1, true, false, false, false, false);
+		case 24: ApplyAnimation(playerid, "BEACH", "ParkSit_M_loop", 4.1, true, false, false, false, false);
+		case 25: ApplyAnimation(playerid, "PARK", "Tai_Chi_Loop", 4.1, true, false, false, false, false);
+		case 26: ApplyAnimation(playerid, "BAR", "dnk_stndF_loop", 4.1, true, false, false, false, false);
+		case 27: ApplyAnimation(playerid, "DANCING", "DAN_Right_A", 4.1, true, false, false, false, false);
+		case 28: ApplyAnimation(playerid, "BSKTBALL", "BBALL_def_loop", 4.1, true, false, false, false, false);
+		case 29: ApplyAnimation(playerid, "MISC", "plyr_shkhead", 4.1, false, false, false, false, false);
+		case 30: ApplyAnimation(playerid, "BSKTBALL", "BBALL_idle", 4.1, false, false, false, false, false);
+		case 31: ApplyAnimation(playerid, "CAMERA", "camstnd_cmon", 4.1, true, false, false, false, false);
+		case 32: ApplyAnimation(playerid, "SHOP", "SHP_Rob_HandsUP", 4.1, true, false, false, false, false);
+		case 33: ApplyAnimation(playerid, "CRACK", "crckidle2", 4.1, true, false, false, false, false);
+		case 34: ApplyAnimation(playerid, "CRACK", "crckidle4", 4.1, true, false, false, false, false);
+		case 35: ApplyAnimation(playerid, "DEALER", "DEALER_IDLE", 4.1, true, false, false, false, false);
+		case 36: ApplyAnimation(playerid, "GANGS", "leanIDLE", 4.1, true, false, false, false, false);
+		case 37: ApplyAnimation(playerid, "GANGS", "shake_carSH", 4.1, false, false, false, false, false);
+		case 38: ApplyAnimation(playerid, "GANGS", "smkcig_prtl", 4.1, false, false, false, false, false);
+		case 39: ApplyAnimation(playerid, "BEACH", "ParkSit_W_loop", 4.1, true, false, false, false, false);
+		case 40: ApplyAnimation(playerid, "INT_HOUSE", "LOU_Loop", 4.1, true, false, false, false, false);
+		case 41: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Bored_Loop", 4.1, true, false, false, false, false);
+		case 42: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Idle_Loop", 4.1, true, false, false, false, false);
+		case 43: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Type_Loop", 4.1, true, false, false, false, false);
+		case 44: ApplyAnimation(playerid, "INT_SHOP", "shop_shelf", 4.1, true, false, false, false, false);
+		case 45: ApplyAnimation(playerid, "JST_BUISNESS", "girl_02", 4.1, true, false, false, false, false);
+		case 46: ApplyAnimation(playerid, "KISSING", "GF_StreetArgue_02", 4.1, false, false, false, false, false);
+		case 47: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_01", 4.1, false, false, false, false, false);
+		case 48: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_02", 4.1, false, false, false, false, false);
+		case 49: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_03", 4.1, false, false, false, false, false);
+		case 50: ApplyAnimation(playerid, "LOWRIDER", "RAP_B_Loop", 4.1, true, false, false, false, false);
+		case 51: ApplyAnimation(playerid, "MEDIC", "CPR", 4.1, true, false, false, false, false);
+		case 52: ApplyAnimation(playerid, "MISC", "bitchslap", 4.1, true, false, false, false, false);
+		case 53: ApplyAnimation(playerid, "MISC", "bng_wndw", 4.1, true, false, false, false, false);
+		case 54: ApplyAnimation(playerid, "MISC", "KAT_Throw_K", 4.1, false, false, false, false, false);
+		case 55: ApplyAnimation(playerid, "MISC", "SEAT_LR", 4.1, true, false, false, false, false);
+		case 56: ApplyAnimation(playerid, "ped", "SEAT_idle", 4.1, true, false, false, false, false);
+		case 57: ApplyAnimation(playerid, "ON_LOOKERS", "lkup_loop", 4.1, true, false, false, false, false);
+		case 58: ApplyAnimation(playerid, "ON_LOOKERS", "Pointup_loop", 4.1, true, false, false, false, false);
+		case 59: ApplyAnimation(playerid, "ON_LOOKERS", "panic_loop", 4.1, true, false, false, false, false);
+		case 60: ApplyAnimation(playerid, "ON_LOOKERS", "shout_02", 4.1, true, false, false, false, false);
+		case 61: ApplyAnimation(playerid, "PAULNMAC", "Piss_loop", 4.1, true, false, false, false, false);
+		case 62: ApplyAnimation(playerid, "GHANDS", "gsign1LH", 4.1, true, false, false, false, false);
+		case 63: ApplyAnimation(playerid, "ped", "IDLE_taxi", 4.1, true, false, false, false, false);
+		case 64: ApplyAnimation(playerid, "POLICE", "Door_Kick", 4.1, false, false, false, false, false);
+		case 65: ApplyAnimation(playerid, "POLICE", "CopTraf_Stop", 4.1, true, false, false, false, false);
+		case 66: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY_B", 4.1, true, false, false, false, false);
+		case 67: ApplyAnimation(playerid, "LOWRIDER", "RAP_C_Loop", 4.1, true, false, false, false, false);
+		case 68: ApplyAnimation(playerid, "SWAT", "gnstwall_injurd", 4.1, true, false, false, false, false);
+		case 69: ApplyAnimation(playerid, "SWEET", "Sweet_injuredloop", 4.1, true, false, false, false, false);
+		case 70: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY", 4.1, true, false, false, false, false);
+		case 71: ApplyAnimation(playerid, "GHANDS", "gsign2", 4.1, true, false, false, false, false);
+		case 72: ApplyAnimation(playerid, "GHANDS", "gsign4", 4.1, true, false, false, false, false);
+		case 73: ApplyAnimation(playerid, "GHANDS", "gsign5", 4.1, true, false, false, false, false);
     }
     if (3 < animation < 74) SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для остановки анимации введите {CCFF00}/stopanim");
     else SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для остановки анимации нажмите кнопку {CCFF00}' F '");
@@ -13346,7 +13348,7 @@ CMD:stopanim(playerid)
 CMD:club(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
-    Teleport(playerid, -2561.8328, -2682.8013, 805.7775, 150, 0, 0, 86);
+    Teleport(playerid, -2561.8328, -2682.8013, 805.7775, 150, 0, false, 86);
     return 1;
 }
 
@@ -13357,8 +13359,8 @@ CMD:verifyclan(playerid, params[])
     if (!IsPlayerConnected(params[0])) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не в сети{FF0000}!");
     if (PlayerInfo[params[0]][pGang] == 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не в клане{FF0000}!");
     if (PlayerInfo[params[0]][pGangLvl] < 6) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Игрок не владелец клана{FF0000}!");
-    if (GangInfo[PlayerInfo[params[0]][pGang]][gVerifyCapt] == 1) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Клан уже верефицирован{FF0000}!");
-    GangInfo[PlayerInfo[params[0]][pGang]][gVerifyCapt] = 1;
+    if (GangInfo[PlayerInfo[params[0]][pGang]][gVerifyCapt]) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Клан уже верефицирован{FF0000}!");
+    GangInfo[PlayerInfo[params[0]][pGang]][gVerifyCapt] = true;
     new str[128];
     mysql_format(ServerDB, str, sizeof(str), "UPDATE `gangs` SET `gVerifyCapt`='%d' WHERE `gID`='%d' LIMIT 1", GangInfo[PlayerInfo[params[0]][pGang]][gVerifyCapt], PlayerInfo[params[0]][pGang]);
     mysql_tquery(ServerDB, str, "", "");
@@ -13395,7 +13397,7 @@ stock fire_stock(playerid)
 {
     new rand = random(sizeof(checkpoint_fire));
 
-    SetPlayerRaceCheckpoint(playerid, 2, checkpoint_fire[rand][0], checkpoint_fire[rand][1], checkpoint_fire[rand][2], 0.0, 0.0, 0.0, 10.0);
+    SetPlayerRaceCheckpoint(playerid, CP_TYPE_GROUND_EMPTY, checkpoint_fire[rand][0], checkpoint_fire[rand][1], checkpoint_fire[rand][2], 0.0, 0.0, 0.0, 10.0);
     object_fire[playerid] = CreateObject(18691, checkpoint_fire[rand][0], checkpoint_fire[rand][1], checkpoint_fire[rand][2], 0.0, 0.0, 0.0);
 
     completion_fire[playerid] = 0;
@@ -13536,7 +13538,7 @@ fpub:OnCheatDetected(playerid, const ip_address[], type, code)
             if (AC_Flood[playerid] == true) return 1;
             format(string, sizeof(string), "[Nex-AC] {FFCC00}%s[%d] {FFFFFF}возможно использует читы: {FFCC00}CarShot #%d", PlayerInfo[playerid][pName], playerid, code);
         }
-        case 32: return ClearAnimations(playerid, 1);
+        case 32: return ClearAnimations(playerid, SYNC_ALL);
         case 33: return 1;
         case 34:
         {

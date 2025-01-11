@@ -181,7 +181,7 @@ IPacket:ID_PLAYER_SYNC(playerid, BitStream:bs)
 	floatmul(onFootData[PR_quaternion][0], onFootData[PR_quaternion][1]))), floatadd(floatsub(floatsub(floatpower(onFootData[PR_quaternion][0], 2.0),
 	floatpower(onFootData[PR_quaternion][1], 2.0)), floatpower(onFootData[PR_quaternion][2], 2.0)),
 	floatpower(onFootData[PR_quaternion][3], 2.0)));
-	if(floatabs(rak_ang) > 85.0 && onFootData[PR_specialAction] == SPECIAL_ACTION_NONE)
+	if(floatabs(rak_ang) > 85.0 && SPECIAL_ACTION:onFootData[PR_specialAction] == SPECIAL_ACTION_NONE)
 	{
 		if(++RAKInfo[playerid][rakQuatCount] > RAK_MAX_QUAT_WARNINGS)
 		{
