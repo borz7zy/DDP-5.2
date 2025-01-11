@@ -5,11 +5,11 @@
 #pragma warning disable 213
 #pragma warning disable 234
 
-#include <a_samp>
+#include <open.mp>
 #include <Pawn.RakNet>
 #tryinclude <rakcheat>
 #include <sscanf2>
-#tryinclude <nex-ac>
+//#tryinclude <nex-ac>
 #include <streamer>
 #include <foreach>
 #tryinclude <weapon-config>
@@ -1946,7 +1946,7 @@ public OnPlayerConnect(playerid)
     mysql_tquery(ServerDB, str, "CheckRegister", "d", playerid);
 
     new str_client[41];
-    GetPlayerClientID(playerid, str_client, 40);
+    gpci(playerid, str_client, 40);
     printf("player %s[%d] connected. device id: %s", PlayerInfo[playerid][pName], playerid, str_client);
 
     new strtwo[64];
@@ -4115,8 +4115,7 @@ public OnPlayerInteriorChange(playerid, newinteriorid, oldinteriorid)
     return 1;
 }
 
-#define HOLDING(%0) \
-((newkeys & ( % 0)) == ( % 0))
+#define HOLDING(%0) ((newkeys & ( %0)) == ( %0))
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
@@ -12360,7 +12359,7 @@ stock Teleport(playerid, Float:x, Float:y, Float:z, vw, int, bool:incar, Float:a
     return 1;
 }
 
-public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, Float:fY, Float:fZ, Float:fRotX, Float:fRotY, Float:fRotZ)
+public OnPlayerEditObject(playerid, playerobject, objectid, EDIT_RESPONSE:response, Float:fX, Float:fY, Float:fZ, Float:fRotX, Float:fRotY, Float:fRotZ)
 {
     return 0;
 }
@@ -13805,7 +13804,7 @@ stock GetVehicleName(carid)
         case 555: car = "Windsor";
         case 556: car = "Monster \"A\"";
         case 557: car = "Monster \"B\"";
-        case 558: car = "Uranus"; 
+        case 558: car = "Uranus";
         case 559: car = "Jester";
         case 560: car = "Sultan";
         case 561: car = "Stratum";

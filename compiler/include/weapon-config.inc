@@ -328,7 +328,7 @@ forward OnRejectedHit(playerid, hit[E_REJECTED_HIT]);
 #define WEAPON_HELIBLADES 50
 #define WEAPON_EXPLOSION 51
 #define WEAPON_CARPARK 52
-#define WEAPON_UNKNOWN 55
+//#define WEAPON_UNKNOWN 55
 
 #if !defined _INC_SKY
 	// Define packet IDs
@@ -2668,7 +2668,7 @@ public OnPlayerRequestClass(playerid, classid)
 	}
 }
 
-public OnPlayerDeath(playerid, killerid, reason)
+public OnPlayerDeath(playerid, killerid, WEAPON:reason)
 {
 	s_TrueDeath[playerid] = true;
 	s_InClassSelection[playerid] = false;
@@ -2828,7 +2828,7 @@ public WC_CbugPunishment(playerid, weapon) {
 	}
 }
 
-public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
+public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
 {
 	new animlib[32], animname[32];
 
@@ -3009,7 +3009,7 @@ public OnPlayerExitVehicle(playerid, vehicleid)
 	return WC_OnPlayerExitVehicle(playerid, vehicleid);
 }
 
-public OnPlayerStateChange(playerid, newstate, oldstate)
+public OnPlayerStateChange(playerid, PLAYER_STATE:newstate, PLAYER_STATE:oldstate)
 {
 	if (s_Spectating[playerid] != INVALID_PLAYER_ID && newstate != PLAYER_STATE_SPECTATING) {
 		s_Spectating[playerid] = INVALID_PLAYER_ID;
@@ -3195,7 +3195,7 @@ public OnPlayerUpdate(playerid)
 	return WC_OnPlayerUpdate(playerid);
 }
 
-public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
+public OnPlayerGiveDamage(playerid, damagedid, Float:amount, WEAPON:weaponid, bodypart)
 {
 	if (!IsHighRateWeapon(weaponid)) {
 		DebugMessage(playerid, "OnPlayerGiveDamage(%d gave %f to %d using %d on bodypart %d)", playerid, amount, damagedid, weaponid, bodypart);
@@ -3476,7 +3476,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	return 0;
 }
 
-public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
+public OnPlayerTakeDamage(playerid, issuerid, Float:amount, WEAPON:weaponid, bodypart)
 {
 	if (IsPlayerNPC(playerid)) {
 		return 0;
@@ -3673,7 +3673,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
 	return 0;
 }
 
-public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
+public OnPlayerWeaponShot(playerid, WEAPON:weaponid, BULLET_HIT_TYPE:hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
 	#if WC_CUSTOM_VENDING_MACHINES
 		if (s_VendingUseTimer[playerid] != -1) {
