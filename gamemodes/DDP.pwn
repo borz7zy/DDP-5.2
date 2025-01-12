@@ -1454,8 +1454,7 @@ public OnGameModeInit()
     new timeloadmode = GetTickCount();
     UsePlayerPedAnims();
     SetGameModeText("DRIFT DM RACE STUNT RPG FUN");
-    SendRconCommand("chatlogging 1");//RCON-команда печати чата игроков в сервер-логе
-    SendRconCommand("hostname ¤ [O.3.7] ¤ « РУССКИЙ ДРИФТ СЕРВЕР » ¤ DDP ¤");
+    SendRconCommand("name ¤ [O.3.7] ¤ « РУССКИЙ ДРИФТ СЕРВЕР » ¤ DDP ¤");
     SendRconCommand("language Русский/Russian");//RCON-команда языка сервера
     SendRconCommand("reloadbans");//RCON-команда перезагрузки бан-листа
     AllowAdminTeleport(true);//Разрешаем телепорты

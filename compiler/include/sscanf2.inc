@@ -1,5 +1,5 @@
 /*
- *  sscanf 2.13.2
+ *  sscanf 2.13.8
  *
  *  Version: MPL 1.1
  *
@@ -156,8 +156,8 @@ static stock SSCANF_VERSION_MINOR = 13;
  * The sscanf build number.
  * </remarks>
  */
-static stock SSCANF_VERSION_BUILD =  1;
-#define SSCANF_VERSION_BUILD  1
+static stock SSCANF_VERSION_BUILD = 8;
+#define SSCANF_VERSION_BUILD  8
 
 /**
  * <library>sscanf</library>
@@ -227,6 +227,7 @@ stock const SSCANF_VERSION_BCD = SSCANF_VERSION;
 
 #define sscanf_%0\32; sscanf_
 #define SSCANF:%0(%1) forward sscanf_%0(%1);public sscanf_%0(%1)
+#define @kustom()%0(%1) forward sscanf_%0(%1);public sscanf_%0(%1)
 
 // The check for `SSCANF_GetClosestString` ensures that this is the first
 // compiler pass and thus the check for `sscanf` only finds earlier definitions
@@ -498,8 +499,19 @@ static stock SSCANF_Version(version[] = "", size = sizeof (version))
  * well for improved error messages.
  * </remarks>
  */
+
+#if defined __PawnBuild
+	// On old compilers, only issue the warning at the call site.
+	#pragma warning push
+	#pragma warning disable 234
+#endif
+
 #pragma deprecated - include <sscanf2> first.
 forward sscanf(const data[], const format[], {T_WEAPON, Float, _}:...);
+
+#if defined __PawnBuild
+	#pragma warning pop
+#endif
 
 // For pawno native detection.
 /*
@@ -530,8 +542,19 @@ native sscanf(const data[], const format[], {T_WEAPON, Float, _}:...);
  * number as well for improved error messages.
  * </remarks>
  */
+
+#if defined __PawnBuild
+	// On old compilers, only issue the warning at the call site.
+	#pragma warning push
+	#pragma warning disable 234
+#endif
+
 #pragma deprecated - include <sscanf2> first.
 forward unformat(const data[], const format[], {T_WEAPON, Float, _}:...);
+
+#if defined __PawnBuild
+	#pragma warning pop
+#endif
 
 // For pawno native detection.
 /*
@@ -1298,6 +1321,13 @@ stock SSCANF_GetSimilarValue(const input[], const candidates[][], const results[
  * otherwise again <c>-1</c> is returned.
  * </remarks>
  */
+
+#if defined __PawnBuild
+	// On old compilers, only issue the warning at the call site.
+	#pragma warning push
+	#pragma warning disable 234
+#endif
+
 #pragma deprecated Use `SSCANF_GetSimilarString` for more human results.
 stock SSCANF_GetClosestString(const input[], const candidates[][], threshold = cellmax, count = sizeof (candidates))
 {
@@ -1315,6 +1345,10 @@ stock SSCANF_GetClosestString(const input[], const candidates[][], threshold = c
 	}
 	return closest;
 }
+
+#if defined __PawnBuild
+	#pragma warning pop
+#endif
 
 /**
  * <library>sscanf</library>
@@ -1335,6 +1369,13 @@ stock SSCANF_GetClosestString(const input[], const candidates[][], threshold = c
  * function checks for this.
  * </remarks>
  */
+
+#if defined __PawnBuild
+	// On old compilers, only issue the warning at the call site.
+	#pragma warning push
+	#pragma warning disable 234
+#endif
+
 #pragma deprecated Use `SSCANF_GetSimilarValue` for more human results.
 stock SSCANF_GetClosestValue(const input[], const candidates[][], const results[], fail = cellmin, threshold = cellmax, count = sizeof (candidates), check = sizeof (results))
 {
@@ -1346,6 +1387,10 @@ stock SSCANF_GetClosestValue(const input[], const candidates[][], const results[
 	}
 	return results[closest];
 }
+
+#if defined __PawnBuild
+	#pragma warning pop
+#endif
 
 /**
  * <library>sscanf</library>

@@ -95,13 +95,13 @@
     "password": "123123",
     "pawn": {
         "legacy_plugins": [
-            "mysql.dll", "MapAndreas.dll"
+            "mysql", "MapAndreas", "streamer"
         ],
         "main_scripts": [
             "DDP 1"
         ],
         "side_scripts": [
-            "mapping"
+            "filterscripts/mapping"
         ]
     },
     "rcon": {
