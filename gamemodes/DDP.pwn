@@ -2,7 +2,6 @@
 //#snippet new_cmd_p CMD:cmd_name(playerid, const params[]) {\n\treturn 1;\n}
 //#snippet new_fpub fpub:func_name(){\n\treturn 1;\n}
 
-// #pragma warning disable 213
 #define MIXED_SPELLINGS
 
 #include <open.mp>
@@ -82,13 +81,7 @@ enum
 
 #define fpub:%0(%1) forward %0(%1); public %0(%1)
 
-///////////////////////////////////////[MySQL]//////////////////////////////////
 new MySQL:ServerDB;
-#define CONNECT ""
-#define USER ""
-#define BD ""
-#define PASS ""
-///////////////////////////////////////[MySQL]//////////////////////////////////
 
 //==========================Money Bag========================
 enum mbinfo
@@ -1478,7 +1471,7 @@ public OnGameModeInit()
 
     Streamer_VisibleItems(STREAMER_TYPE_OBJECT, 1000);
 
-    ServerDB = mysql_connect(CONNECT, USER, PASS, BD);
+    ServerDB = mysql_connect_file();
     //mysql_log(ALL);
     mysql_set_charset("cp1251");
 
@@ -1649,8 +1642,6 @@ public OnGameModeInit()
 
     Create3DTextLabel("Спаривание коров\nТолько для лиц достигших 18 лет!", COLOR_VIOLET, 331.2250, -1847.0557, 4.3782, 35.0, 0, false); //Коровы на пляже))0
 
-    SendRconCommand("loadfs mapping");
-
     // Пожарник
 
     clothes_fire = CreateDynamicPickup(1275, 1, -1832.1133, 123.8611, 15.1200);
@@ -1751,8 +1742,7 @@ public OnGameModeExit()
     KillTimer(timpolsec);
     KillTimer(minsertimer);
     KillTimer(drifttimer);
-    SendRconCommand("unloadfs mapping");
-    for (new i = 0; i < MAX_PLAYERS; i++)
+    for (new i = 0; i < MAX_PLAYERS; ++i)
     {
         if (mapiconid[i] != -600) //если ID мап иконки наблюдения НЕ пустой, то:
         {
@@ -1763,9 +1753,7 @@ public OnGameModeExit()
         {
             Kick(i);
         }
-    }
-    for (new i = 0; i < MAX_PLAYERS; i++) //speedometer
-    {
+
         PlayerTextDrawHide(i, VehicleSpeed[i]);
         PlayerTextDrawHide(i, HMS44[i]);
         if (IsPlayerConnected(i))
@@ -1775,7 +1763,10 @@ public OnGameModeExit()
         }
         NulledPlayer(i);
     }
-    mysql_close(ServerDB);
+    
+    if(MYSQL_INVALID_HANDLE != ServerDB)
+        mysql_close(ServerDB);
+    
     return 1;
 }
 
