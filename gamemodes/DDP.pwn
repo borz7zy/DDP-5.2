@@ -22,6 +22,15 @@
 
 #define MAX_GANGS 1000
 
+enum (<<= 1)
+{
+  CMD_LOGGED = 1,
+  CMD_SPAWNED,
+  CMD_GANG,
+  CMD_VIP,
+  CMD_ADMIN
+};
+
 enum gang_info
 {
     gID,
@@ -66,7 +75,7 @@ enum
 #define VK_GEN_D "vk.com/ughgvs"
 #define VK_DEV "vk.com/dzhinboy"
 #define COLOR_SERVER "{8F30E4}"
-enum _DIALOGS_
+enum
 {
     DIALOG_ZERO = 2
 };
@@ -796,7 +805,9 @@ enum pInfo
     Float:saveA,
     saveInt,
     saveVw,
-    bool:pAnimLoading
+    bool:pAnimLoading,
+
+    pPermissions
 };
 new PlayerInfo[MAX_PLAYERS][pInfo];
 new WEAPON:gPlayerWeapon[MAX_PLAYERS][26];
@@ -11484,7 +11495,6 @@ stock OneSecOnd()
     {
         if (IsPlayerConnected(i)) //дальнейшее выполняем если игрок в коннекте
         {
-
             if (GetPlayerWeapon(i) == WEAPON_MINIGUN
 			|| GetPlayerWeapon(i) == WEAPON_GRENADE
 			|| GetPlayerWeapon(i) == WEAPON_MOLOTOV
@@ -11758,6 +11768,7 @@ public OnPlayerCommandPerformed(playerid, cmd[], params[], result, flags)
     return 1;
 }
 
+flags:hh(CMD_LOGGED)
 CMD:hh(playerid)
 {
     new string[144];
@@ -11779,6 +11790,8 @@ CMD:hh(playerid)
     }
     return 1;
 }
+
+flags:bb(CMD_LOGGED)
 CMD:bb(playerid)
 {
     new string[144];
@@ -11800,6 +11813,7 @@ CMD:bb(playerid)
     return 1;
 }
 
+flags:report(CMD_SPAWNED)
 CMD:report(playerid, params[])
 {
     new string[256], id, ruport[144];
@@ -11840,6 +11854,7 @@ CMD:report(playerid, params[])
     return 1;
 }
 
+flags:rules(CMD_LOGGED)
 CMD:rules(playerid)
 {
     new strdln[2048];
@@ -11862,13 +11877,14 @@ CMD:rules(playerid)
     return 1;
 }
 
+flags:admins(CMD_VIP | CMD_ADMIN)
 CMD:admins(playerid)
 {
-    if (AI[playerid][aLevel] < 1) return 1;
     mysql_tquery(ServerDB, "SELECT * FROM `admins` ORDER BY `alevel`", "atab", "d", playerid);
     return 1;
 }
 
+flags:cmd(CMD_LOGGED)
 CMD:cmd(playerid)
 {
     new string[2087];//2087 на последнее редактирование
@@ -11916,6 +11932,7 @@ CMD:cmd(playerid)
     return 1;
 }
 
+flags:dm(CMD_SPAWNED)
 CMD:dm(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -11923,6 +11940,7 @@ CMD:dm(playerid)
     return 1;
 }
 
+flags:tp(CMD_SPAWNED)
 CMD:tp(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -11931,6 +11949,7 @@ CMD:tp(playerid)
     return 1;
 }
 
+flags:radio(CMD_SPAWNED)
 CMD:radio(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -11952,6 +11971,7 @@ CMD:radio(playerid)
     return 1;
 }
 
+flags:buyweapon(CMD_SPAWNED)
 CMD:buyweapon(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -11961,6 +11981,7 @@ CMD:buyweapon(playerid)
     return 1;
 }
 
+flags:gang(CMD_SPAWNED)
 CMD:gang(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -11969,6 +11990,7 @@ CMD:gang(playerid)
     return 1;
 }
 
+flags:settings(CMD_SPAWNED)
 CMD:settings(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -11976,6 +11998,7 @@ CMD:settings(playerid)
     return 1;
 }
 
+flags:transport(CMD_SPAWNED)
 CMD:transport(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -11990,6 +12013,7 @@ CMD:transport(playerid)
     return 1;
 }
 
+flags:mepl(CMD_SPAWNED)
 CMD:mepl(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12005,6 +12029,7 @@ CMD:mepl(playerid)
     return 1;
 }
 
+flags:dice(CMD_SPAWNED)
 CMD:dice(playerid, params[])
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12069,6 +12094,7 @@ CMD:dice(playerid, params[])
     return 1;
 }
 
+flags:eject(CMD_SPAWNED)
 CMD:eject(playerid, params[])
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12083,6 +12109,7 @@ CMD:eject(playerid, params[])
     return 1;
 }
 
+flags:setx(CMD_ADMIN)
 CMD:setx(playerid, params[])
 {
     new ids, scope, ipl[MAX_PLAYER_NAME], tpl[MAX_PLAYER_NAME], sssm[256];
@@ -12110,6 +12137,7 @@ CMD:setx(playerid, params[])
     }
     return 1;
 }
+
 /*
 CMD:sex(playerid, params[])
 {
@@ -12138,6 +12166,8 @@ CMD:sex(playerid, params[])
 	return 1;
 }
 */
+
+flags:playanim(CMD_SPAWNED)
 CMD:playanim(playerid, params[])
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -12155,6 +12185,7 @@ CMD:playanim(playerid, params[])
     return 1;
 }
 
+flags:me(CMD_SPAWNED)
 CMD:me(playerid, params[])
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12186,6 +12217,7 @@ CMD:me(playerid, params[])
     return 1;
 }
 
+flags:try(CMD_SPAWNED)
 CMD:try(playerid, params[])
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12224,6 +12256,7 @@ CMD:try(playerid, params[])
     return 1;
 }
 
+flags:cmchat(CMD_LOGGED)
 CMD:cmchat(playerid)
 {
     for (new i = 0; i < 60; i++)
@@ -12234,12 +12267,14 @@ CMD:cmchat(playerid)
     return 1;
 }
 
+flags:help(CMD_LOGGED)
 CMD:help(playerid)
 {
     ShowPlayerDialog(playerid, 900, DIALOG_STYLE_LIST, "Помощь по серверу", "[1] Команды сервера\n[2] Помощь по чату сервера\n[3] Правила сервера\n[4] Информация о сервере", "Выбор", "Отмена");
     return 1;
 }
 
+flags:dmexit(CMD_SPAWNED)
 CMD:dmexit(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12365,9 +12400,9 @@ public OnPlayerEditObject(playerid, playerobject, objectid, EDIT_RESPONSE:respon
     return 0;
 }
 
+flags:ainfo(CMD_ADMIN)
 CMD:ainfo(playerid)
 {
-    if (AI[playerid][aLevel] == 0) return 1;
     new str[1024];
     format(str, sizeof(str), "Администратор %s [DATABASE ID %d]:\
 	\n\nУровень: %d\
@@ -12581,6 +12616,7 @@ fpub:MoneyBag() // Money Bag
     return 1;
 }
 
+flags:mbstart(CMD_ADMIN)
 CMD:mbstart(playerid)
 {
     if (AI[playerid][aLevel] < 4) return 1;
@@ -12612,6 +12648,7 @@ CMD:mbstart(playerid)
     return 1;
 }
 
+flags:tpmb(CMD_ADMIN)
 CMD:tpmb(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12624,6 +12661,7 @@ CMD:tpmb(playerid)
     return 1;
 }
 
+flags:treasure(CMD_SPAWNED)
 CMD:treasure(playerid)
 {
     new string[144];
@@ -12634,6 +12672,7 @@ CMD:treasure(playerid)
     return 1;
 }
 
+flags:s(CMD_SPAWNED)
 CMD:s(playerid)
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -12659,6 +12698,7 @@ CMD:s(playerid)
     return 1;
 }
 
+flags:t(CMD_SPAWNED)
 CMD:t(playerid)
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -12691,6 +12731,7 @@ CMD:t(playerid)
     return 1;
 }
 
+flags:about(CMD_SPAWNED)
 cmd:about(playerid)
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12699,6 +12740,7 @@ cmd:about(playerid)
 	\n{FFFFFF}Разработчик мода: {FF0000}"DEVONE"", "ОК", "");
     return 1;
 }
+
 new timeloadbus;
 fpub:LoadBussines()
 {
@@ -12768,6 +12810,7 @@ stock CreateBussinesOnMap(colums)
     return 1;
 }
 
+flags:bushelp(CMD_ADMIN)
 CMD:bushelp(playerid)
 {
     if (AI[playerid][aLevel]  < 4) return 1;
@@ -12781,6 +12824,7 @@ CMD:bushelp(playerid)
     return 1;
 }
 
+flags:cbus(CMD_ADMIN)
 CMD:cbus(playerid, params[])
 {
     if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
@@ -12940,6 +12984,7 @@ CMD:cancelbus(playerid)
     return 1;
 }
 
+flags:admh(CMD_ADMIN)
 CMD:admh(playerid)
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -12949,6 +12994,7 @@ CMD:admh(playerid)
     return 1;
 }
 
+flags:setvm(CMD_ADMIN)
 CMD:setvw(playerid, params[])
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -12962,6 +13008,7 @@ CMD:setvw(playerid, params[])
     return 1;
 }
 
+flags:duel(CMD_SPAWNED)
 CMD:duel(playerid, params[])
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -12990,6 +13037,7 @@ CMD:duel(playerid, params[])
     return 1;
 }
 
+flags:cancel(CMD_SPAWNED)
 CMD:cancel(playerid)
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -13012,6 +13060,7 @@ CMD:cancel(playerid)
     return 1;
 }
 
+flags:accept(CMD_SPAWNED)
 CMD:accept(playerid)
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
@@ -13333,6 +13382,7 @@ stock SelectAnimation(const playerid, const animation)
     return 1;
 }
 
+flags:stopanim(CMD_SPAWNED)
 CMD:stopanim(playerid)
 {
     ClearAnimations(playerid);
@@ -13344,13 +13394,14 @@ CMD:stopanim(playerid)
 #tryinclude "../../modules/dialogs.inc"
 #include "../../modules/functions.inc"
 
+flags:club(CMD_SPAWNED)
 CMD:club(playerid)
 {
-    if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return 1;
     Teleport(playerid, -2561.8328, -2682.8013, 805.7775, 150, 0, false, 86);
     return 1;
 }
 
+flags:verifyclan(CMD_ADMIN)
 CMD:verifyclan(playerid, params[])
 {
     if (AI[playerid][aLevel] < 3) return 1;
@@ -13370,6 +13421,7 @@ CMD:verifyclan(playerid, params[])
     return 1;
 }
 
+flags:g(CMD_GANG)
 cmd:g(playerid, params[])
 {
     new chat[256], text[144];
@@ -13865,6 +13917,7 @@ stock GetVehicleName(carid)
     return car;
 }
 
+flags:leaders(CMD_SPAWNED)
 CMD:leaders(playerid)
 {
     new str[2048];
@@ -13889,9 +13942,11 @@ CMD:leaders(playerid)
     return 1;
 }
 
+flags:test_cmd(CMD_ADMIN)
 CMD:test_cmd(playerid)
 {
     if (AI[playerid][aLevel] < 4) return 1;
     else SendClientMessage(playerid, COLOR_PURPLE, "Проверка пройдена!");
     return 1;
 }
+alias:test_cmd("tcmd")
