@@ -96,7 +96,7 @@
     "pawn": {
         "legacy_plugins": [
             "mysql",
-            "MapAndreas",
+            "mapandreas",
             "streamer"
         ],
         "main_scripts": [

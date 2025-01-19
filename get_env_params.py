@@ -13,9 +13,10 @@ file_path = 'config.json'
 with open(file_path, 'r') as file:
     data = json.load(file)
 
-rcon_password = os.getenv('RCON_PASSWORD')
-network_port = os.getenv('NETWORK_PORT')
-url_link = os.getenv('WEBSITE_LINK')
+rcon_password = os.getenv('DDP_RCON_PASSWORD')
+network_port = os.getenv('DDP_NETWORK_PORT')
+url_link = os.getenv('DDP_WEBSITE_LINK')
+server_pwd = os.getenv('DDP_SERVER_PASSWORD')
 
 if rcon_password:
     data['rcon']['password'] = rcon_password
@@ -25,6 +26,11 @@ if network_port:
 
 if url_link:
     data['website'] = url_link
+
+if server_pwd:
+    data['password'] = server_pwd
+    if server_pwd is "none":
+        data['password'] = ""
 
 with open(file_path, 'w') as file:
     json.dump(data, file, indent=4)

@@ -1727,7 +1727,7 @@ public OnGameModeInit()
     TextDrawTextSize(skins_TD[6], 13.0000, 54.0000);
     TextDrawSetSelectable(skins_TD[6], true);
 
-    MapAndreas_Init(MAP_ANDREAS_MODE_FULL, "scriptfiles/SAFull.hmap");
+    MapAndreas_Init(MAP_ANDREAS_MODE_FULL, "scriptfiles/SAfull.hmap");
 
     new randspawn = random(sizeof(playspax));
     AddPlayerClass(0, playspax[randspawn], playspay[randspawn], playspaz[randspawn], 0.0000);
@@ -1767,6 +1767,7 @@ public OnGameModeExit()
     if(MYSQL_INVALID_HANDLE != ServerDB)
         mysql_close(ServerDB);
     
+    MapAndreas_Unload();
     return 1;
 }
 
