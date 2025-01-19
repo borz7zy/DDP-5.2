@@ -5,8 +5,8 @@
 FROM ubuntu:24.04
 #ставим зависимости
 RUN dpkg --add-architecture i386 && \
-apt-get update && apt-get install -y lib32gcc-s1 libstdc++6:i386 libc6:i386 python3 && \
-apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get update && apt-get install -y lib32gcc-s1 libstdc++6:i386 libc6:i386 python3 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #копируем в директорию samp
 WORKDIR /samp
@@ -23,15 +23,23 @@ WORKDIR /samp
 
 #передаем хостовые переменные окружения
 #generate_mysql.py
-ENV DDP_MYSQL_HOST=$DDP_MYSQL_HOST
-ENV DDP_MYSQL_USER=$DDP_MYSQL_USER
-ENV DDP_MYSQL_PASS=$DDP_MYSQL_PASS
-ENV DDP_MYSQL_DTBS=$DDP_MYSQL_DTBS
+ARG DDP_MYSQL_HOST
+ENV DDP_MYSQL_HOST=${DDP_MYSQL_HOST:-localhost}
+ARG DDP_MYSQL_USER
+ENV DDP_MYSQL_USER=${DDP_MYSQL_USER:-root}
+ARG DDP_MYSQL_PASS
+ENV DDP_MYSQL_PASS=${DDP_MYSQL_PASS:-123456}
+ARG DDP_MYSQL_DTBS
+ENV DDP_MYSQL_DTBS=${DDP_MYSQL_DTBS:-database}
 #get_env_params.py
-ENV DDP_RCON_PASSWORD=$DDP_RCON_PASSWORD
-ENV DDP_NETWORK_PORT=$DDP_NETWORK_PORT
-ENV DDP_WEBSITE_LINK=$DDP_WEBSITE_LINK
-ENV DDP_SERVER_PASSWORD=$DDP_SERVER_PASSWORD
+ARG DDP_RCON_PASSWORD
+ENV DDP_RCON_PASSWORD=${DDP_RCON_PASSWORD:-jnjnjkoasdkjNDUSHYASD9n2}
+ARG DDP_NETWORK_PORT
+ENV DDP_NETWORK_PORT=${DDP_NETWORK_PORT:-7777}
+ARG DDP_WEBSITE_LINK
+ENV DDP_WEBSITE_LINK=${DDP_WEBSITE_LINK:-https://vk.com/rds.energy}
+ARG DDP_SERVER_PASSWORD
+ENV DDP_SERVER_PASSWORD=${DDP_SERVER_PASSWORD:-none}
 
 RUN echo $DDP_MYSQL_HOST
 
