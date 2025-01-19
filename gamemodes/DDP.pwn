@@ -21,13 +21,13 @@
 
 #define MAX_GANGS 1000
 
-enum (<<= 1)
+enum( <<= 1)
 {
-  CMD_LOGGED = 1,
-  CMD_SPAWNED,
-  CMD_GANG,
-  CMD_VIP,
-  CMD_ADMIN
+    CMD_LOGGED = 1,
+    CMD_SPAWNED,
+    CMD_GANG,
+    CMD_VIP,
+    CMD_ADMIN
 };
 
 enum gang_info
@@ -1454,7 +1454,6 @@ public OnPlayerEnterDynamicArea(playerid, areaid)
 
 public OnGameModeInit()
 {
-    SendRconCommand("password FEFEWFWE&RF%DF^&SD%");
     new timeloadmode = GetTickCount();
     UsePlayerPedAnims();
     SetGameModeText("DRIFT DM RACE STUNT RPG FUN");
@@ -1733,7 +1732,6 @@ public OnGameModeInit()
     AddPlayerClass(0, playspax[randspawn], playspay[randspawn], playspaz[randspawn], 0.0000);
 
     printf("Игровой мод загружен. Потрачено на загрузку: %i ms.", GetTickCount() - timeloadmode);
-    SendRconCommand("password 0");
     return 1;
 }
 
@@ -1763,10 +1761,10 @@ public OnGameModeExit()
         }
         NulledPlayer(i);
     }
-    
-    if(MYSQL_INVALID_HANDLE != ServerDB)
+
+    if (MYSQL_INVALID_HANDLE != ServerDB)
         mysql_close(ServerDB);
-    
+
     MapAndreas_Unload();
     return 1;
 }
@@ -2310,8 +2308,8 @@ public OnPlayerSpawn(playerid)
                         SpawnPlayer(playerid);
                     }
                     if (GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0] == 0.0000
-					&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] == 0.0000
-					&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2] == 0.0000)
+                            && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] == 0.0000
+                            && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2] == 0.0000)
                     {
                         Teleport(playerid, GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0], GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1], GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2], 0, 0, false, 0, false);
                     }
@@ -3006,9 +3004,9 @@ public OnPlayerCommandText(playerid, cmdtext[])
     if (strcmp(cmd, "/exit", true) == 0)
     {
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID)
-			return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
+            return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
         if (!(Events[playerid][0] || Events[playerid][1] || Events[playerid][2] || Events[playerid][3]))
-			return 1;
+            return 1;
         if (Events[playerid][0]) Events[playerid][0] = false;
         else if (Events[playerid][1]) Events[playerid][1] = false;
         else if (Events[playerid][2]) Events[playerid][2] = false;
@@ -3024,13 +3022,13 @@ public OnPlayerCommandText(playerid, cmdtext[])
     }
     if (strcmp(cmd, "/restart", true) == 0)
     {
-        if(AI[playerid][aSpectateID] != INVALID_PLAYER_ID)
-			return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
-        if(!(Events[playerid][1] || Events[playerid][2] || Events[playerid][3]))
-			return 1;
-        if(Events[playerid][1]) Teleport(playerid, 4476.1670, -2928.5520, 6.3952, 200, 0, true, 180, false);
-        else if(Events[playerid][2]) Teleport(playerid, -824.2225, 5745.5137, 16.3740, 200, 0, true, 0, false);
-        else if(Events[playerid][3]) Teleport(playerid, 2414.5239, 4172.3516, 54.1008, 200, 0, true, 0, false);
+        if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID)
+            return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
+        if (!(Events[playerid][1] || Events[playerid][2] || Events[playerid][3]))
+            return 1;
+        if (Events[playerid][1]) Teleport(playerid, 4476.1670, -2928.5520, 6.3952, 200, 0, true, 180, false);
+        else if (Events[playerid][2]) Teleport(playerid, -824.2225, 5745.5137, 16.3740, 200, 0, true, 0, false);
+        else if (Events[playerid][3]) Teleport(playerid, 2414.5239, 4172.3516, 54.1008, 200, 0, true, 0, false);
         SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы отправились в самое начало!");
         return 1;
     }
@@ -3251,7 +3249,7 @@ sh_gotos:
         print(string);
         SendClientMessageToAll(COLOR_VIOLET, string);
 
-		new Float:X, Float:Y, Float:Z, playint, playvw;
+        new Float:X, Float:Y, Float:Z, playint, playvw;
         GetPlayerPos(playerid, X, Y, Z);
         playint = GetPlayerInterior(playerid);
         playvw = GetPlayerVirtualWorld(playerid);
@@ -3614,7 +3612,7 @@ sh_gotos:
         format(string, sizeof(string), ""NS" {CCFF00}Игрок %s [%d] запустил DM-отсчёт от %d секунд.", PlayerInfo[playerid][pName], playerid, sec);
         print(string);
 
-		new Float:X, Float:Y, Float:Z, playint, playvw;
+        new Float:X, Float:Y, Float:Z, playint, playvw;
         GetPlayerPos(playerid, X, Y, Z);
         playint = GetPlayerInterior(playerid);
         playvw = GetPlayerVirtualWorld(playerid);
@@ -4127,9 +4125,9 @@ public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
 {
     if (HOLDING(KEY_FIRE) && GetPVarInt(playerid, "on_zone") == 1 && GetPVarInt(playerid, "press_fire") == 0)
     {
-		new Float:object_x, Float:object_y, Float:object_z;
-		GetObjectPos(object_fire[playerid], object_x, object_y, object_z);
-		if(IsPlayerInRangeOfPoint(playerid, 17.0, object_x, object_y, object_z))
+        new Float:object_x, Float:object_y, Float:object_z;
+        GetObjectPos(object_fire[playerid], object_x, object_y, object_z);
+        if (IsPlayerInRangeOfPoint(playerid, 17.0, object_x, object_y, object_z))
         {
             SetPVarInt(playerid, "press_fire", 1);
         }
@@ -9383,7 +9381,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if (listitem == 4)
             {
                 if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER //если игрок на месте водителя,
-				|| GetPlayerState(playerid) == PLAYER_STATE_PASSENGER) //или на месте пассажира, то:
+                        || GetPlayerState(playerid) == PLAYER_STATE_PASSENGER) //или на месте пассажира, то:
                 {
                     new Float:angle;
                     new VID = GetPlayerVehicleID(playerid);
@@ -10644,8 +10642,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы не в клане!");
             }
             else if (GangInfo[PlayerInfo[playerid][pGang]][gSpawns][0] == 0.0000
-			&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] == 0.0000
-			&& GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2] == 0.0000)
+                     && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][1] == 0.0000
+                     && GangInfo[PlayerInfo[playerid][pGang]][gSpawns][2] == 0.0000)
             {
                 return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}У клана нет сохранённой точки спавна!");
             }
@@ -11201,7 +11199,7 @@ public VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
     new Float:x, Float:y, Float:z, Float:Angle;
     GetPlayerPos(playerid, x, y, z);
     if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER
-	|| GetPlayerState(playerid) == PLAYER_STATE_PASSENGER)
+            || GetPlayerState(playerid) == PLAYER_STATE_PASSENGER)
     {
         GetVehicleZAngle(GetPlayerVehicleID(playerid), Angle);
     }
@@ -11488,14 +11486,14 @@ stock OneSecOnd()
         if (IsPlayerConnected(i)) //дальнейшее выполняем если игрок в коннекте
         {
             if (GetPlayerWeapon(i) == WEAPON_MINIGUN
-			|| GetPlayerWeapon(i) == WEAPON_GRENADE
-			|| GetPlayerWeapon(i) == WEAPON_MOLOTOV
-			|| GetPlayerWeapon(i) == WEAPON_THERMAL_GOGGLES
-			|| GetPlayerWeapon(i) == WEAPON_SATCHEL
-			|| GetPlayerWeapon(i) == WEAPON_FLAMETHROWER
-			|| GetPlayerWeapon(i) == WEAPON_HEATSEEKER
-			|| GetPlayerWeapon(i) == WEAPON_ROCKETLAUNCHER
-			&& (AI[i][aLevel] < 1))
+                    || GetPlayerWeapon(i) == WEAPON_GRENADE
+                    || GetPlayerWeapon(i) == WEAPON_MOLOTOV
+                    || GetPlayerWeapon(i) == WEAPON_THERMAL_GOGGLES
+                    || GetPlayerWeapon(i) == WEAPON_SATCHEL
+                    || GetPlayerWeapon(i) == WEAPON_FLAMETHROWER
+                    || GetPlayerWeapon(i) == WEAPON_HEATSEEKER
+                    || GetPlayerWeapon(i) == WEAPON_ROCKETLAUNCHER
+                    && (AI[i][aLevel] < 1))
             {
                 ResetPlayerWeapons(i);
                 format(string, sizeof(string), "[Anti-Cheat]: {FFFFFF}Игрок {CCFF00}%s {FFFFFF}был кикнут за запрещённое оружие!", PlayerInfo[i][pName]);
@@ -12352,18 +12350,22 @@ stock Teleport(playerid, Float:x, Float:y, Float:z, vw, int, bool:incar, Float:a
 {
     if (Checkpoint[playerid] != 0) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Увольтесь с работы!");
     tpdrift[playerid] = 1;
-    if (!incar){
+    if (!incar)
+    {
         SetPlayerInterior(playerid, int);
         SetPlayerVirtualWorld(playerid, vw);
         SetPlayerPos(playerid, Float:x, Float:y, Float:z);
         SetPlayerFacingAngle(playerid, anglee);
-    }else if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
+    }
+    else if (GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
     {
         new VID = GetPlayerVehicleID(playerid);
         SetVehicleVirtualWorld(VID, vw) ;
         SetVehiclePos(VID, x, y, z);
         SetVehicleZAngle(VID, anglee);
-    }else{
+    }
+    else
+    {
         SetPlayerInterior(playerid, int);
         SetPlayerVirtualWorld(playerid, vw);
         SetPlayerPos(playerid, Float:x, Float:y, Float:z);
@@ -13298,76 +13300,76 @@ stock SelectAnimation(const playerid, const animation)
         case 1: SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE2);
         case 2: SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE3);
         case 3: SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DANCE4);
-		case 4: ApplyAnimation(playerid, "DANCING", "DAN_Left_A", 4.1, true, false, false, false, false);
-		case 5: ApplyAnimation(playerid, "DANCING", "dnce_M_a", 4.1, true, false, false, false, false);
-		case 6: ApplyAnimation(playerid, "ON_LOOKERS", "wave_loop", 4.1, true, false, false, false, false);
-		case 7: ApplyAnimation(playerid, "BEACH", "bather", 4.1, true, false, false, false, false);
-		case 8: ApplyAnimation(playerid, "ped", "WALK_drunk", 4.1, true, true, true, false, false);
-		case 9: ApplyAnimation(playerid, "ped", "Crouch_Roll_L", 4.1, true, true, true, false, false);
-		case 10: ApplyAnimation(playerid, "ped", "endchat_03", 4.1, true, false, false, false, false);
-		case 11: ApplyAnimation(playerid, "benchpress", "gym_bp_celebrate", 4.1, true, false, false, false, false);
-		case 12: ApplyAnimation(playerid, "ped", "cower", 4.1, true, false, false, false, false);
-		case 13: ApplyAnimation(playerid, "BOMBER", "BOM_Plant", 4.1, false, false, false, false, false);
-		case 14: ApplyAnimation(playerid, "SHOP", "ROB_Shifty", 4.1, false, false, false, false, false);
-		case 15: ApplyAnimation(playerid, "SHOP", "ROB_Loop_Threat", 4.1, true, false, false, false, false);
-		case 16: ApplyAnimation(playerid, "COP_AMBIENT", "Coplook_loop", 4.1, true, false, false, false, false);
-		case 17: ApplyAnimation(playerid, "FOOD", "EAT_Vomit_P", 4.1, false, false, false, false, false);
-		case 18: ApplyAnimation(playerid, "FOOD", "EAT_Burger", 4.1, false, false, false, false, false);
-		case 19: ApplyAnimation(playerid, "SWEET", "sweet_ass_slap", 4.1, false, false, false, false, false);
-		case 20: ApplyAnimation(playerid, "DEALER", "DEALER_DEAL", 4.1, false, false, false, false, false);
-		case 21: ApplyAnimation(playerid, "CRACK", "crckdeth2", 4.1, true, false, false, false, false);
-		case 22: ApplyAnimation(playerid, "LOWRIDER", "M_smklean_loop", 4.1, true, false, false, false, false);
-		case 23: ApplyAnimation(playerid, "LOWRIDER", "F_smklean_loop", 4.1, true, false, false, false, false);
-		case 24: ApplyAnimation(playerid, "BEACH", "ParkSit_M_loop", 4.1, true, false, false, false, false);
-		case 25: ApplyAnimation(playerid, "PARK", "Tai_Chi_Loop", 4.1, true, false, false, false, false);
-		case 26: ApplyAnimation(playerid, "BAR", "dnk_stndF_loop", 4.1, true, false, false, false, false);
-		case 27: ApplyAnimation(playerid, "DANCING", "DAN_Right_A", 4.1, true, false, false, false, false);
-		case 28: ApplyAnimation(playerid, "BSKTBALL", "BBALL_def_loop", 4.1, true, false, false, false, false);
-		case 29: ApplyAnimation(playerid, "MISC", "plyr_shkhead", 4.1, false, false, false, false, false);
-		case 30: ApplyAnimation(playerid, "BSKTBALL", "BBALL_idle", 4.1, false, false, false, false, false);
-		case 31: ApplyAnimation(playerid, "CAMERA", "camstnd_cmon", 4.1, true, false, false, false, false);
-		case 32: ApplyAnimation(playerid, "SHOP", "SHP_Rob_HandsUP", 4.1, true, false, false, false, false);
-		case 33: ApplyAnimation(playerid, "CRACK", "crckidle2", 4.1, true, false, false, false, false);
-		case 34: ApplyAnimation(playerid, "CRACK", "crckidle4", 4.1, true, false, false, false, false);
-		case 35: ApplyAnimation(playerid, "DEALER", "DEALER_IDLE", 4.1, true, false, false, false, false);
-		case 36: ApplyAnimation(playerid, "GANGS", "leanIDLE", 4.1, true, false, false, false, false);
-		case 37: ApplyAnimation(playerid, "GANGS", "shake_carSH", 4.1, false, false, false, false, false);
-		case 38: ApplyAnimation(playerid, "GANGS", "smkcig_prtl", 4.1, false, false, false, false, false);
-		case 39: ApplyAnimation(playerid, "BEACH", "ParkSit_W_loop", 4.1, true, false, false, false, false);
-		case 40: ApplyAnimation(playerid, "INT_HOUSE", "LOU_Loop", 4.1, true, false, false, false, false);
-		case 41: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Bored_Loop", 4.1, true, false, false, false, false);
-		case 42: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Idle_Loop", 4.1, true, false, false, false, false);
-		case 43: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Type_Loop", 4.1, true, false, false, false, false);
-		case 44: ApplyAnimation(playerid, "INT_SHOP", "shop_shelf", 4.1, true, false, false, false, false);
-		case 45: ApplyAnimation(playerid, "JST_BUISNESS", "girl_02", 4.1, true, false, false, false, false);
-		case 46: ApplyAnimation(playerid, "KISSING", "GF_StreetArgue_02", 4.1, false, false, false, false, false);
-		case 47: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_01", 4.1, false, false, false, false, false);
-		case 48: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_02", 4.1, false, false, false, false, false);
-		case 49: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_03", 4.1, false, false, false, false, false);
-		case 50: ApplyAnimation(playerid, "LOWRIDER", "RAP_B_Loop", 4.1, true, false, false, false, false);
-		case 51: ApplyAnimation(playerid, "MEDIC", "CPR", 4.1, true, false, false, false, false);
-		case 52: ApplyAnimation(playerid, "MISC", "bitchslap", 4.1, true, false, false, false, false);
-		case 53: ApplyAnimation(playerid, "MISC", "bng_wndw", 4.1, true, false, false, false, false);
-		case 54: ApplyAnimation(playerid, "MISC", "KAT_Throw_K", 4.1, false, false, false, false, false);
-		case 55: ApplyAnimation(playerid, "MISC", "SEAT_LR", 4.1, true, false, false, false, false);
-		case 56: ApplyAnimation(playerid, "ped", "SEAT_idle", 4.1, true, false, false, false, false);
-		case 57: ApplyAnimation(playerid, "ON_LOOKERS", "lkup_loop", 4.1, true, false, false, false, false);
-		case 58: ApplyAnimation(playerid, "ON_LOOKERS", "Pointup_loop", 4.1, true, false, false, false, false);
-		case 59: ApplyAnimation(playerid, "ON_LOOKERS", "panic_loop", 4.1, true, false, false, false, false);
-		case 60: ApplyAnimation(playerid, "ON_LOOKERS", "shout_02", 4.1, true, false, false, false, false);
-		case 61: ApplyAnimation(playerid, "PAULNMAC", "Piss_loop", 4.1, true, false, false, false, false);
-		case 62: ApplyAnimation(playerid, "GHANDS", "gsign1LH", 4.1, true, false, false, false, false);
-		case 63: ApplyAnimation(playerid, "ped", "IDLE_taxi", 4.1, true, false, false, false, false);
-		case 64: ApplyAnimation(playerid, "POLICE", "Door_Kick", 4.1, false, false, false, false, false);
-		case 65: ApplyAnimation(playerid, "POLICE", "CopTraf_Stop", 4.1, true, false, false, false, false);
-		case 66: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY_B", 4.1, true, false, false, false, false);
-		case 67: ApplyAnimation(playerid, "LOWRIDER", "RAP_C_Loop", 4.1, true, false, false, false, false);
-		case 68: ApplyAnimation(playerid, "SWAT", "gnstwall_injurd", 4.1, true, false, false, false, false);
-		case 69: ApplyAnimation(playerid, "SWEET", "Sweet_injuredloop", 4.1, true, false, false, false, false);
-		case 70: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY", 4.1, true, false, false, false, false);
-		case 71: ApplyAnimation(playerid, "GHANDS", "gsign2", 4.1, true, false, false, false, false);
-		case 72: ApplyAnimation(playerid, "GHANDS", "gsign4", 4.1, true, false, false, false, false);
-		case 73: ApplyAnimation(playerid, "GHANDS", "gsign5", 4.1, true, false, false, false, false);
+        case 4: ApplyAnimation(playerid, "DANCING", "DAN_Left_A", 4.1, true, false, false, false, false);
+        case 5: ApplyAnimation(playerid, "DANCING", "dnce_M_a", 4.1, true, false, false, false, false);
+        case 6: ApplyAnimation(playerid, "ON_LOOKERS", "wave_loop", 4.1, true, false, false, false, false);
+        case 7: ApplyAnimation(playerid, "BEACH", "bather", 4.1, true, false, false, false, false);
+        case 8: ApplyAnimation(playerid, "ped", "WALK_drunk", 4.1, true, true, true, false, false);
+        case 9: ApplyAnimation(playerid, "ped", "Crouch_Roll_L", 4.1, true, true, true, false, false);
+        case 10: ApplyAnimation(playerid, "ped", "endchat_03", 4.1, true, false, false, false, false);
+        case 11: ApplyAnimation(playerid, "benchpress", "gym_bp_celebrate", 4.1, true, false, false, false, false);
+        case 12: ApplyAnimation(playerid, "ped", "cower", 4.1, true, false, false, false, false);
+        case 13: ApplyAnimation(playerid, "BOMBER", "BOM_Plant", 4.1, false, false, false, false, false);
+        case 14: ApplyAnimation(playerid, "SHOP", "ROB_Shifty", 4.1, false, false, false, false, false);
+        case 15: ApplyAnimation(playerid, "SHOP", "ROB_Loop_Threat", 4.1, true, false, false, false, false);
+        case 16: ApplyAnimation(playerid, "COP_AMBIENT", "Coplook_loop", 4.1, true, false, false, false, false);
+        case 17: ApplyAnimation(playerid, "FOOD", "EAT_Vomit_P", 4.1, false, false, false, false, false);
+        case 18: ApplyAnimation(playerid, "FOOD", "EAT_Burger", 4.1, false, false, false, false, false);
+        case 19: ApplyAnimation(playerid, "SWEET", "sweet_ass_slap", 4.1, false, false, false, false, false);
+        case 20: ApplyAnimation(playerid, "DEALER", "DEALER_DEAL", 4.1, false, false, false, false, false);
+        case 21: ApplyAnimation(playerid, "CRACK", "crckdeth2", 4.1, true, false, false, false, false);
+        case 22: ApplyAnimation(playerid, "LOWRIDER", "M_smklean_loop", 4.1, true, false, false, false, false);
+        case 23: ApplyAnimation(playerid, "LOWRIDER", "F_smklean_loop", 4.1, true, false, false, false, false);
+        case 24: ApplyAnimation(playerid, "BEACH", "ParkSit_M_loop", 4.1, true, false, false, false, false);
+        case 25: ApplyAnimation(playerid, "PARK", "Tai_Chi_Loop", 4.1, true, false, false, false, false);
+        case 26: ApplyAnimation(playerid, "BAR", "dnk_stndF_loop", 4.1, true, false, false, false, false);
+        case 27: ApplyAnimation(playerid, "DANCING", "DAN_Right_A", 4.1, true, false, false, false, false);
+        case 28: ApplyAnimation(playerid, "BSKTBALL", "BBALL_def_loop", 4.1, true, false, false, false, false);
+        case 29: ApplyAnimation(playerid, "MISC", "plyr_shkhead", 4.1, false, false, false, false, false);
+        case 30: ApplyAnimation(playerid, "BSKTBALL", "BBALL_idle", 4.1, false, false, false, false, false);
+        case 31: ApplyAnimation(playerid, "CAMERA", "camstnd_cmon", 4.1, true, false, false, false, false);
+        case 32: ApplyAnimation(playerid, "SHOP", "SHP_Rob_HandsUP", 4.1, true, false, false, false, false);
+        case 33: ApplyAnimation(playerid, "CRACK", "crckidle2", 4.1, true, false, false, false, false);
+        case 34: ApplyAnimation(playerid, "CRACK", "crckidle4", 4.1, true, false, false, false, false);
+        case 35: ApplyAnimation(playerid, "DEALER", "DEALER_IDLE", 4.1, true, false, false, false, false);
+        case 36: ApplyAnimation(playerid, "GANGS", "leanIDLE", 4.1, true, false, false, false, false);
+        case 37: ApplyAnimation(playerid, "GANGS", "shake_carSH", 4.1, false, false, false, false, false);
+        case 38: ApplyAnimation(playerid, "GANGS", "smkcig_prtl", 4.1, false, false, false, false, false);
+        case 39: ApplyAnimation(playerid, "BEACH", "ParkSit_W_loop", 4.1, true, false, false, false, false);
+        case 40: ApplyAnimation(playerid, "INT_HOUSE", "LOU_Loop", 4.1, true, false, false, false, false);
+        case 41: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Bored_Loop", 4.1, true, false, false, false, false);
+        case 42: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Idle_Loop", 4.1, true, false, false, false, false);
+        case 43: ApplyAnimation(playerid, "INT_OFFICE", "OFF_Sit_Type_Loop", 4.1, true, false, false, false, false);
+        case 44: ApplyAnimation(playerid, "INT_SHOP", "shop_shelf", 4.1, true, false, false, false, false);
+        case 45: ApplyAnimation(playerid, "JST_BUISNESS", "girl_02", 4.1, true, false, false, false, false);
+        case 46: ApplyAnimation(playerid, "KISSING", "GF_StreetArgue_02", 4.1, false, false, false, false, false);
+        case 47: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_01", 4.1, false, false, false, false, false);
+        case 48: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_02", 4.1, false, false, false, false, false);
+        case 49: ApplyAnimation(playerid, "KISSING", "Grlfrd_Kiss_03", 4.1, false, false, false, false, false);
+        case 50: ApplyAnimation(playerid, "LOWRIDER", "RAP_B_Loop", 4.1, true, false, false, false, false);
+        case 51: ApplyAnimation(playerid, "MEDIC", "CPR", 4.1, true, false, false, false, false);
+        case 52: ApplyAnimation(playerid, "MISC", "bitchslap", 4.1, true, false, false, false, false);
+        case 53: ApplyAnimation(playerid, "MISC", "bng_wndw", 4.1, true, false, false, false, false);
+        case 54: ApplyAnimation(playerid, "MISC", "KAT_Throw_K", 4.1, false, false, false, false, false);
+        case 55: ApplyAnimation(playerid, "MISC", "SEAT_LR", 4.1, true, false, false, false, false);
+        case 56: ApplyAnimation(playerid, "ped", "SEAT_idle", 4.1, true, false, false, false, false);
+        case 57: ApplyAnimation(playerid, "ON_LOOKERS", "lkup_loop", 4.1, true, false, false, false, false);
+        case 58: ApplyAnimation(playerid, "ON_LOOKERS", "Pointup_loop", 4.1, true, false, false, false, false);
+        case 59: ApplyAnimation(playerid, "ON_LOOKERS", "panic_loop", 4.1, true, false, false, false, false);
+        case 60: ApplyAnimation(playerid, "ON_LOOKERS", "shout_02", 4.1, true, false, false, false, false);
+        case 61: ApplyAnimation(playerid, "PAULNMAC", "Piss_loop", 4.1, true, false, false, false, false);
+        case 62: ApplyAnimation(playerid, "GHANDS", "gsign1LH", 4.1, true, false, false, false, false);
+        case 63: ApplyAnimation(playerid, "ped", "IDLE_taxi", 4.1, true, false, false, false, false);
+        case 64: ApplyAnimation(playerid, "POLICE", "Door_Kick", 4.1, false, false, false, false, false);
+        case 65: ApplyAnimation(playerid, "POLICE", "CopTraf_Stop", 4.1, true, false, false, false, false);
+        case 66: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY_B", 4.1, true, false, false, false, false);
+        case 67: ApplyAnimation(playerid, "LOWRIDER", "RAP_C_Loop", 4.1, true, false, false, false, false);
+        case 68: ApplyAnimation(playerid, "SWAT", "gnstwall_injurd", 4.1, true, false, false, false, false);
+        case 69: ApplyAnimation(playerid, "SWEET", "Sweet_injuredloop", 4.1, true, false, false, false, false);
+        case 70: ApplyAnimation(playerid, "RIOT", "RIOT_ANGRY", 4.1, true, false, false, false, false);
+        case 71: ApplyAnimation(playerid, "GHANDS", "gsign2", 4.1, true, false, false, false, false);
+        case 72: ApplyAnimation(playerid, "GHANDS", "gsign4", 4.1, true, false, false, false, false);
+        case 73: ApplyAnimation(playerid, "GHANDS", "gsign5", 4.1, true, false, false, false, false);
     }
     if (3 < animation < 74) SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для остановки анимации введите {CCFF00}/stopanim");
     else SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Для остановки анимации нажмите кнопку {CCFF00}' F '");
