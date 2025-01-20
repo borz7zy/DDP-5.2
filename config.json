@@ -97,7 +97,8 @@
         "legacy_plugins": [
             "mysql",
             "mapandreas",
-            "streamer"
+            "streamer",
+            "redis"
         ],
         "main_scripts": [
             "DDP 1"
