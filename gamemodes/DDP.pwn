@@ -22,6 +22,8 @@
 // #include <jit>
 #include <YSI\YSI_Visual\y_dialog>
 
+#include <redis>
+
 // #pragma dynamic 50484
 
 #define MAX_GANGS 1000
