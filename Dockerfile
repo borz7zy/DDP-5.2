@@ -15,8 +15,8 @@ COPY . .
 #выходим в корень и билдим павн исходники 
 # (увы компиль поддерживает только полный путь, относительный не сработал)
 WORKDIR /
-RUN ./samp/compiler/linux/pawncc '/samp/gamemodes/DDP.pwn' '-D/samp/gamemodes' '-;+' '-(+' '-d3' '-i/samp/compiler/include'
-RUN ./samp/compiler/linux/pawncc '/samp/filterscripts/mapping.pwn' '-D/samp/filterscripts' '-;+' '-(+' '-d3' '-i/samp/compiler/include'
+RUN ./samp/compiler/linux/pawncc '/samp/gamemodes/DDP.pwn' '-D/samp/gamemodes' '-;+' '-(+' '-d3' '-\\' '-O2' '-C+' '-Z+' '-i/samp/compiler/include'
+RUN ./samp/compiler/linux/pawncc '/samp/filterscripts/mapping.pwn' '-D/samp/filterscripts' '-;+' '-(+' '-d3' '-\\' '-O2' '-C+' '-Z+' '-i/samp/compiler/include'
 
 #идем назад в директорию samp
 WORKDIR /samp

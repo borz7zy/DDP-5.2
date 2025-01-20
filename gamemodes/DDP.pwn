@@ -16,8 +16,9 @@
 #include <Pawn.CMD>
 #include <mxdate>
 #include <mapandreas>
+#include <YSI\YSI_Visual\y_dialog>
 
-#pragma dynamic 50484
+// #pragma dynamic 50484
 
 #define MAX_GANGS 1000
 
@@ -67,13 +68,14 @@ enum
 
 #define NS "DDP«"
 #define MNS "«"
-#define IP_S "185.13.47.58:7777"
-#define GEN_D "kyvaldaaa"
-#define DEVONE "dzh1nb0y.oldsc"
-#define VK_G "vk.com/ddp.samp"
-#define VK_GEN_D "vk.com/ughgvs"
-#define VK_DEV "vk.com/dzhinboy"
+#define IP_S "45.84.1.51:1818"
+#define GEN_D "dzh1nb0y"
+#define DEVONE "dzh1nb0y"
+#define VK_G "vk.com/rds.energy"
+#define VK_GEN_D "vk.com/id2518601"
+#define VK_DEV "vk.com/p_i_g"
 #define COLOR_SERVER "{8F30E4}"
+
 enum
 {
     DIALOG_ZERO = 2
@@ -724,10 +726,14 @@ new DiceMoney[MAX_PLAYERS];
 new UniParam[MAX_PLAYERS]; //Универсальная переменная для любых задач
 new FloodStop[MAX_PLAYERS]; //Контрольная переменная от флуда
 
-new Float:playspax[5] = {153.6635, 2180.6038, 388.6408, 1127.0583, -2049.1440}; //координаты x случайного спавна игрока
-new Float:playspay[5] = {-1940.3774, -2272.9414, -1523.2218, -1446.9573, 461.4249}; //координаты y случайного спавна игрока
-new Float:playspaz[5] = {3.7734, 13.4850, 32.2734, 15.4261, 35.1719}; //координаты z случайного спавна игрока
-new Float:playspaa[5] = {359.1931, 82.77, 223.5877, 83.28, 314.0035}; //угол поворота случайного спавна игрока
+new Float:RandomSpawns[][4] =
+{
+    {153.6635, -1940.3774, 3.7734, 359.1931},
+    {2180.6038, -2272.9414, 13.4850, 82.77},
+    {388.6408, -1523.2218, 32.2734, 223.5877},
+    {1127.0583, -1446.9573, 15.4261, 83.28},
+    {-2049.1440, 461.4249, 35.1719, 314.0035}
+};
 
 new ColNick[19] = {0xFF0000FF, 0xFF3F3FFF, 0xFF3F00FF, 0xBF3F00FF, 0xFF7F3FFF, 0xFF7F00FF, 0xFFFF00FF, 0x3FFF3FFF, 0x00FF00FF,
                    0x00BF00FF, 0x00FFFFFF, 0x00BFFFFF, 0x3F3FFFFF, 0x0000FFFF, 0x7F3FFFFF, 0x7F00FFFF, 0xFF00FFFF, 0x7F7F7FFF, 0x00FF0000
@@ -738,7 +744,6 @@ new migalka[MAX_PLAYERS][2];
 new migalkatr1[MAX_PLAYERS];//передача данных между частями программы разделённых таймером
 new migalkatr2[MAX_PLAYERS];
 new tpspa;//случайный индекс выборки из массива координат спавна игрока
-new col4car;//номер случайного цвета при спавне транспорта
 new playcar[MAX_PLAYERS];//ид транспорта игрока
 new bool:gPlayerLogged[MAX_PLAYERS];
 new bool:gPlayerSpawned[MAX_PLAYERS];
@@ -1025,7 +1030,7 @@ new HouseInfo[MAX_CREATE_HOUSE][lHouseInfo];
 
 new driftexp[MAX_PLAYERS];
 
-new PlayerText3D:SpawnTextDraw[MAX_PLAYERS][sizeof(playspax)];
+new PlayerText3D:SpawnTextDraw[MAX_PLAYERS][sizeof(RandomSpawns)];
 
 /////////////Для работ
 /*
@@ -1728,8 +1733,8 @@ public OnGameModeInit()
 
     MapAndreas_Init(MAP_ANDREAS_MODE_FULL, "scriptfiles/SAfull.hmap");
 
-    new randspawn = random(sizeof(playspax));
-    AddPlayerClass(0, playspax[randspawn], playspay[randspawn], playspaz[randspawn], 0.0000);
+    new randspawn = random(sizeof(RandomSpawns));
+    AddPlayerClass(0, RandomSpawns[randspawn][0], RandomSpawns[randspawn][1], RandomSpawns[randspawn][2], 0.0000);
 
     printf("Игровой мод загружен. Потрачено на загрузку: %i ms.", GetTickCount() - timeloadmode);
     return 1;
@@ -2117,7 +2122,7 @@ public OnPlayerDisconnect(playerid, reason)
 
     FloodStop[playerid] = 0; //Обнуляем флуд контроль
 
-    for (new i = 0; i < sizeof(playspax); i++)
+    for (new i = 0; i < sizeof(RandomSpawns); i++)
     {
         DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
     }
@@ -2285,7 +2290,7 @@ public OnPlayerSpawn(playerid)
         {
             if (PlayerInfo[playerid][pSpawnChange] == 0) //спавн сервера
             {
-                Teleport(playerid, playspax[tpspa], playspay[tpspa], playspaz[tpspa], 0, 0, false, playspaa[tpspa], false);
+                Teleport(playerid, RandomSpawns[tpspa][0], RandomSpawns[tpspa][1], RandomSpawns[tpspa][2], 0, 0, false, RandomSpawns[tpspa][3], false);
             }
             else if (PlayerInfo[playerid][pSpawnChange] == 1) //спавн банды
             {
@@ -3293,11 +3298,11 @@ sh_gotos:
             printf(" --> Игрок %s включил Y -режим вызова меню.", PlayerInfo[playerid][pName]);
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Вы выбрали кнопку меню Y");
 
-            for (new i = 0; i < sizeof(playspax); i++)
+            for (new i = 0; i < sizeof(RandomSpawns); i++)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}Y\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
-                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, 0x8F30E4AA, playspax[i], playspay[i], playspaz[i], 20.0);
+                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, 0x8F30E4AA, RandomSpawns[i][0], RandomSpawns[i][1], RandomSpawns[i][2], 20.0);
             }
         }
         else
@@ -3306,11 +3311,11 @@ sh_gotos:
             printf(" --> Игрок %s отключил Y -режим вызова меню.", PlayerInfo[playerid][pName]);
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Вы выбрали кнопку меню ALT/2(в машине)");
 
-            for (new i = 0; i < sizeof(playspax); i++)
+            for (new i = 0; i < sizeof(RandomSpawns); i++)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
-                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, 0x8F30E4AA, playspax[i], playspay[i], playspaz[i], 20.0);
+                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, 0x8F30E4AA, RandomSpawns[i][0], RandomSpawns[i][1], RandomSpawns[i][2], 20.0);
             }
         }
         return 1;
@@ -4451,11 +4456,11 @@ fpub:OnPlayerLogin(playerid)
         mysql_format(ServerDB, str, sizeof(str), "SELECT * FROM `bans` WHERE `NameBan` = '%e' LIMIT 1", PlayerInfo[playerid][pName]);
         mysql_tquery(ServerDB, str, "CheckBann", "d", playerid);
 
-        for (new i; i < sizeof(playspax); i++)
+        for (new i; i < sizeof(RandomSpawns); i++)
         {
             if (GetPVarInt(playerid, "MnMode") == 1)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
             else if (GetPVarInt(playerid, "MnMode") == 2)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}Y\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
-            SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, 0x8F30E4AA, playspax[i], playspay[i], playspaz[i], 20.0);
+            SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, 0x8F30E4AA, RandomSpawns[i][0], RandomSpawns[i][1], RandomSpawns[i][2], 20.0);
         }
 
         if (PlayerInfo[playerid][pSex] == 0)
@@ -7633,48 +7638,48 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 562, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 562, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 565, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 565, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 559, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 559, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 561, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 561, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 560, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 560, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 558, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 558, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
@@ -7695,103 +7700,103 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 429, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 429, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 541, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 541, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 415, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 415, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 480, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 480, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 434, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 434, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 494, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 494, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 502, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 502, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 503, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 503, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 411, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 411, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 9)
             {
-                new vehid = 506, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 506, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 10)
             {
-                new vehid = 451, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 451, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 11)
             {
-                new vehid = 555, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 555, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 12)
             {
-                new vehid = 477, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 477, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -7811,56 +7816,56 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 536, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 536, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 575, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 575, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 534, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 534, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 567, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 567, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 535, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 535, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 576, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 576, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 412, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 412, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -7880,152 +7885,152 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 602, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 602, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 496, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 496, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 401, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 401, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 518, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 518, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 527, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 527, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 589, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 589, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 419, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 419, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 587, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 587, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 533, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 533, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 9)
             {
-                new vehid = 526, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 526, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 10)
             {
-                new vehid = 474, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 474, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 11)
             {
-                new vehid = 545, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 545, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 12)
             {
-                new vehid = 517, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 517, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 13)
             {
-                new vehid = 410, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 410, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 14)
             {
-                new vehid = 600, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 600, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 15)
             {
-                new vehid = 436, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 436, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 16)
             {
-                new vehid = 439, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 439, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 17)
             {
-                new vehid = 549, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 549, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 18)
             {
-                new vehid = 491, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 491, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -8045,152 +8050,152 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 445, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 445, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 507, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 507, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 585, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 585, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 466, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 466, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 492, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 492, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 546, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 546, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 551, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 551, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 516, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 516, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 467, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 467, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 9)
             {
-                new vehid = 426, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 426, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 10)
             {
-                new vehid = 547, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 547, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 11)
             {
-                new vehid = 405, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 405, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 12)
             {
-                new vehid = 580, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 580, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 13)
             {
-                new vehid = 409, vehcol1 = 8, vehcol2 = 15, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 409, dispz = 0;
+                VehicSpawn(playerid, vehid, 8, 15, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 14)
             {
-                new vehid = 550, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 550, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 15)
             {
-                new vehid = 566, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 566, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 16)
             {
-                new vehid = 540, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 540, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 17)
             {
-                new vehid = 421, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 421, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 18)
             {
-                new vehid = 529, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 529, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -8210,56 +8215,56 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 579, vehcol1 = 8, vehcol2 = 15, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 579, dispz = 0;
+                VehicSpawn(playerid, vehid, 8, 15, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 400, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 400, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 404, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 404, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 489, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 489, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 479, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 479, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 442, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 442, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 458, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 458, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -8279,32 +8284,32 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 402, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 402, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 542, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 542, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 603, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 603, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 475, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 475, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -8324,152 +8329,152 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 499, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 499, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 498, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 498, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 609, vehcol1 = 0, vehcol2 = 0, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 609, dispz = 1;
+                VehicSpawn(playerid, vehid, 0, 0, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 524, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 524, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 532, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 532, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 578, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 578, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 486, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 486, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 406, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 406, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 573, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 573, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 9)
             {
-                new vehid = 455, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 455, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 10)
             {
-                new vehid = 588, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 588, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 11)
             {
-                new vehid = 403, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 403, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 12)
             {
-                new vehid = 423, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 423, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 13)
             {
-                new vehid = 414, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 414, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 14)
             {
-                new vehid = 443, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 443, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 15)
             {
-                new vehid = 515, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 515, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 16)
             {
-                new vehid = 514, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 514, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 17)
             {
-                new vehid = 531, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 531, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 18)
             {
-                new vehid = 456, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 456, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -8489,104 +8494,104 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 459, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 459, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 422, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 422, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 482, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 482, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 530, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 530, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 418, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 418, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 572, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 572, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 582, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 582, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 413, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 413, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 440, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 440, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 9)
             {
-                new vehid = 543, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 543, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 10)
             {
-                new vehid = 583, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 583, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 11)
             {
-                new vehid = 478, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 478, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 12)
             {
-                new vehid = 554, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 554, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -8610,12 +8615,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             mysql_format(ServerDB, string, sizeof(string), "UPDATE `players` SET `keymenu`='1' WHERE `PID`='%d' LIMIT 1", PlayerInfo[playerid][pMID]);
             mysql_tquery(ServerDB, string, "", "");
 
-            for (new i; i < sizeof(playspax); i++)
+            for (new i; i < sizeof(RandomSpawns); i++)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 if (GetPVarInt(playerid, "MnMode") == 1)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
                 else if (GetPVarInt(playerid, "MnMode") == 2)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}Y\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
-                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, COLOR_VIOLET, playspax[i], playspay[i], playspaz[i], 20.0);
+                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, COLOR_VIOLET, RandomSpawns[i][0], RandomSpawns[i][1], RandomSpawns[i][2], 20.0);
             }
 
         }
@@ -8627,12 +8632,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             mysql_format(ServerDB, string, sizeof(string), "UPDATE `players` SET `keymenu`='2' WHERE `PID`='%d' LIMIT 1", PlayerInfo[playerid][pMID]);
             mysql_tquery(ServerDB, string, "", "");
 
-            for (new i; i < sizeof(playspax); i++)
+            for (new i; i < sizeof(RandomSpawns); i++)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 if (GetPVarInt(playerid, "MnMode") == 1)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
                 else if (GetPVarInt(playerid, "MnMode") == 2)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}Y\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
-                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, COLOR_VIOLET, playspax[i], playspay[i], playspaz[i], 20.0);
+                SpawnTextDraw[playerid][i] = CreatePlayer3DTextLabel(playerid, string, COLOR_VIOLET, RandomSpawns[i][0], RandomSpawns[i][1], RandomSpawns[i][2], 20.0);
             }
         }
         return 1;
@@ -8643,112 +8648,112 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 568, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 568, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 424, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 424, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 504, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 504, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 457, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 457, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 483, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 483, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 508, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 508, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 571, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 571, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 500, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 500, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 444, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 444, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 9)
             {
-                new vehid = 556, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 556, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 10)
             {
-                new vehid = 557, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 557, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 11)
             {
-                new vehid = 471, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 471, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 12)
             {
-                new vehid = 495, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 495, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 13)
             {
-                new vehid = 539, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 539, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
@@ -8807,74 +8812,74 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 481, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 481, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 509, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 509, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 510, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 510, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 581, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 581, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 462, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 462, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 521, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 521, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 463, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 463, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 522, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 522, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 461, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 461, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 9)
             {
-                new vehid = 448, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 448, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 10)
             {
-                new vehid = 468, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 468, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 return 1;
             }
             if (listitem == 11)
             {
-                new vehid = 586, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 586, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
             }
         }
         else
@@ -8892,72 +8897,72 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         {
             if (listitem == 0)
             {
-                new vehid = 485, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 485, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 1)
             {
-                new vehid = 431, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 431, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 2)
             {
-                new vehid = 438, vehcol1 = 6, vehcol2 = 6, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 438, dispz = 0;
+                VehicSpawn(playerid, vehid, 6, 6, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 3)
             {
-                new vehid = 437, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 437, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 4)
             {
-                new vehid = 574, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 574, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 5)
             {
-                new vehid = 420, vehcol1 = 6, vehcol2 = 6, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 420, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 6)
             {
-                new vehid = 525, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 525, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 7)
             {
-                new vehid = 408, vehcol1 = col4car, vehcol2 = col4car, dispz = 1;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 408, dispz = 1;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
                 return 1;
             }
             if (listitem == 8)
             {
-                new vehid = 552, vehcol1 = col4car, vehcol2 = col4car, dispz = 0;
-                VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz);
+                new vehid = 552, dispz = 0;
+                VehicSpawn(playerid, vehid, -1, -1, dispz);
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Флипнуть тачку можно кнопкой 'N'");
                 SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Телепортировать к себе транспорт при потере можно командой {CCFF00}/getv");
             }
@@ -11030,8 +11035,7 @@ fpub:Drift()
             }
         }
     }
-    tpspa = random(sizeof(playspax));
-    col4car = random(256);
+    tpspa = random(sizeof(RandomSpawns));
     return 1;
 }
 
@@ -13384,9 +13388,9 @@ CMD:stopanim(playerid)
     return 1;
 }
 
-#tryinclude "../../modules/commands.inc"
-#tryinclude "../../modules/dialogs.inc"
-#include "../../modules/functions.inc"
+#include "..\..\modules\commands.inc"
+#include "..\..\modules\dialogs.inc"
+#include "..\..\modules\functions.inc"
 
 flags:club(CMD_SPAWNED)
 CMD:club(playerid)
