@@ -95,6 +95,7 @@
     "password": "123123",
     "pawn": {
         "legacy_plugins": [
+            "jit",
             "mysql",
             "mapandreas",
             "streamer"

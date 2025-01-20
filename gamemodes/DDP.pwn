@@ -18,6 +18,7 @@
 #include <Pawn.CMD>
 #include <mxdate>
 #include <mapandreas>
+#include <jit>
 #include <YSI\YSI_Visual\y_dialog>
 
 // #pragma dynamic 50484
