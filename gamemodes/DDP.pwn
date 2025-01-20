@@ -664,9 +664,6 @@ new Float:MoneyBagPos[3], MoneyBagFound = 1, MoneyBagLocation[50], MoneyBagPicku
 
 #define OBRAD 13 //число радио +1//Радио
 
-forward MinServ();//таймер минут на сервере
-forward VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz);//спавн транспорта (доп)
-
 new bool:R_Vehicle[MAX_PLAYERS] = false;//speedometer
 new PlayerText:VehicleSpeed[MAX_PLAYERS];
 
@@ -892,13 +889,6 @@ new drak_exit;
 new dmzone[MAX_PLAYERS];
 new dmkills[MAX_PLAYERS];
 new dmdeath[MAX_PLAYERS];
-
-static inc_gLetters[26 * 2 + 10] = {'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E',
-                                    'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M',
-                                    'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U',
-                                    'u', 'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y', 'Z', 'z', '0', '1', '2', '3', '4',
-                                    '5', '6', '7', '8', '9'
-                                   };
 
 #define MAX_BUSSINES 2000
 
@@ -1159,7 +1149,7 @@ main() return;
 stock NulledPlayer(playerid)
 {
 
-    for (new i = 0; i < MAX_SLOTS_CAR; i++)
+    for (new i = 0; i < MAX_SLOTS_CAR; ++i)
     {
         MyCarInfo[playerid][i][cID] = -1;
         MyCarInfo[playerid][i][cOwner] = -1;
@@ -1241,7 +1231,7 @@ stock NulledPlayer(playerid)
     DiceMoney[playerid] = 0;
     selectskin[playerid] = -1;
     SetPVarInt(playerid, "FirstCheckNakaz", 0);
-    for (new i = 0; i < 13; i++) //обнуление слотов оружия
+    for (new i = 0; i < 13; ++i) //обнуление слотов оружия
     {
         playweap[playerid][WEAPON_SLOT:i] = UNKNOWN_WEAPON;
         playammo[playerid][WEAPON_SLOT:i] = 0;
@@ -1503,17 +1493,17 @@ public OnGameModeInit()
     CreateDynamicPickup(1550, 1, -2926.0906, 2747.6855, 907.7678, 200, 0, -1, 30.0);//Приз в лабиринте
 
     //для выдачи награды TrackMania
-    for (new i = 0; i < sizeof(EndTrack); i++)
+    for (new i = 0; i < sizeof(EndTrack); ++i)
     {
         TrackManiaCheck[i] = CreateDynamicCube(EndTrack[i][0], EndTrack[i][1], EndTrack[i][2], EndTrack[i][3], EndTrack[i][4], EndTrack[i][5], 200, -1, -1);
     }
 
-    for (new i = 0; i < PRISONZONES; i++)
+    for (new i = 0; i < PRISONZONES; ++i)
     {
         prisonid[i] = CreateDynamicCube(prisoncord[i][0], prisoncord[i][1], prisoncord[i][2], prisoncord[i][3], prisoncord[i][4], prisoncord[i][5], -1, -1, -1);
     }
 
-    for (new i = 0; i < MAX_PLAYERS; i++)
+    for (new i = 0; i < MAX_PLAYERS; ++i)
     {
         mapiconid[i] = -600;//очистка ID мап иконок наблюдения
         NulledPlayer(i);
@@ -2096,7 +2086,7 @@ public OnPlayerDisconnect(playerid, reason)
 
     FloodStop[playerid] = 0; //Обнуляем флуд контроль
 
-    for (new i = 0; i < sizeof(RandomSpawns); i++)
+    for (new i = 0; i < sizeof(RandomSpawns); ++i)
     {
         DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
     }
@@ -2166,7 +2156,7 @@ public OnPlayerDisconnect(playerid, reason)
     migalka[playerid][1] = 0;//несуществующий ид транспорта с мигалкой
     if (playcar[playerid] != 0) //если у игрока есть свой транспорт, то:
     {
-        for (new i = 0; i < MAX_PLAYERS; i++) //поиск и удаление чужого неона и чужой мигалки
+        for (new i = 0; i < MAX_PLAYERS; ++i) //поиск и удаление чужого неона и чужой мигалки
         {
             if (playcar[playerid] == neon[i][2])
             {
@@ -2271,7 +2261,7 @@ public OnPlayerSpawn(playerid)
                 if (PlayerInfo[playerid][pGang] != 0)
                 {
                     new bool:gc = false;
-                    for (new i = 0; i < MAX_GANGS; i++)
+                    for (new i = 0; i < MAX_GANGS; ++i)
                     {
                         if (PlayerInfo[playerid][pGang] == GangInfo[i][gID])
                         {
@@ -2310,7 +2300,7 @@ public OnPlayerSpawn(playerid)
             {
                 if (PlayerInfo[playerid][pHouseID] != 0)
                 {
-                    for (new i = 0; i < MAX_CREATED_HOUSE; i++)
+                    for (new i = 0; i < MAX_CREATED_HOUSE; ++i)
                     {
                         if (PlayerInfo[playerid][pHouseID] == HouseInfo[i][hID])
                         {
@@ -2354,7 +2344,7 @@ public OnPlayerSpawn(playerid)
                 SetPlayerArmour(playerid, 100);
             }
             ResetPlayerWeapons(playerid);
-            for (new i; i < 13; i++) if (gPlayerWeapon[playerid][i] > WEAPON_FIST) GivePlayerWeapon(playerid, gPlayerWeapon[playerid][i], gPlayerWeapon[playerid][i + 13]);
+            for (new i; i < 13; ++i) if (gPlayerWeapon[playerid][i] > WEAPON_FIST) GivePlayerWeapon(playerid, gPlayerWeapon[playerid][i], gPlayerWeapon[playerid][i + 13]);
         }
         else if (dmzone[playerid] != 0 && Prison[playerid] <= 0)
         {
@@ -3168,7 +3158,7 @@ sh_gotos:
     {
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке команды недоступны!");
         if (AI[playerid][aLevel] < 4) return 1;
-        for (new i; i < MAX_CREATED_HOUSE; i++) ClearHouse(i);
+        for (new i; i < MAX_CREATED_HOUSE; ++i) ClearHouse(i);
         foreach(Player, i) PlayerInfo[i][pHouseID] = 0;
 
         mysql_tquery(ServerDB, "UPDATE `players` SET `houseid`='0'", "", "");
@@ -3234,7 +3224,7 @@ sh_gotos:
         playvw = GetPlayerVirtualWorld(playerid);
         sec++;
         countdown[playerid] = sec;
-        for (new i = 0; i < MAX_PLAYERS ; i++)
+        for (new i = 0; i < MAX_PLAYERS ; ++i)
         {
             if (IsPlayerConnected(i))
             {
@@ -3272,7 +3262,7 @@ sh_gotos:
             printf(" --> Игрок %s включил Y -режим вызова меню.", PlayerInfo[playerid][pName]);
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Вы выбрали кнопку меню Y");
 
-            for (new i = 0; i < sizeof(RandomSpawns); i++)
+            for (new i = 0; i < sizeof(RandomSpawns); ++i)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}Y\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
@@ -3285,7 +3275,7 @@ sh_gotos:
             printf(" --> Игрок %s отключил Y -режим вызова меню.", PlayerInfo[playerid][pName]);
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Вы выбрали кнопку меню ALT/2(в машине)");
 
-            for (new i = 0; i < sizeof(RandomSpawns); i++)
+            for (new i = 0; i < sizeof(RandomSpawns); ++i)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
@@ -3330,7 +3320,7 @@ sh_gotos:
                 //если игрок на месте водителя, то:
                 new carpl;
                 carpl = GetPlayerVehicleID(playerid);//получение ид авто инициатора
-                for (new i = 0; i < MAX_PLAYERS; i++)
+                for (new i = 0; i < MAX_PLAYERS; ++i)
                 {
                     if (IsPlayerConnected(i))
                     {
@@ -3365,7 +3355,7 @@ sh_gotos:
                 //если игрок на месте водителя, то:
                 new carpl;
                 carpl = GetPlayerVehicleID(playerid);//получение ид авто инициатора
-                for (new i = 0; i < MAX_PLAYERS; i++)
+                for (new i = 0; i < MAX_PLAYERS; ++i)
                 {
                     if (IsPlayerConnected(i))
                     {
@@ -3597,7 +3587,7 @@ sh_gotos:
         playvw = GetPlayerVirtualWorld(playerid);
         sec++;
         countdown22[playerid] = sec;
-        for (new i = 0; i < MAX_PLAYERS ; i++)
+        for (new i = 0; i < MAX_PLAYERS ; ++i)
         {
             if (IsPlayerConnected(i))
             {
@@ -3852,7 +3842,7 @@ public OnPlayerStateChange(playerid, PLAYER_STATE:newstate, PLAYER_STATE:oldstat
 public OnPlayerEnterCheckpoint(playerid)
 {
     //Грузчик
-    for (new i = 0; i < 5; i++)
+    for (new i = 0; i < 5; ++i)
     {
         if (PlayerToPoint(2.0, playerid, Gruz4ikCords[i][0], Gruz4ikCords[i][1], Gruz4ikCords[i][2]))
         {
@@ -4133,7 +4123,7 @@ public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
         }
         if (GetPlayerInterior(playerid) == 0)
         {
-            for (new i; i < MAX_CREATED_HOUSE; i++)
+            for (new i; i < MAX_CREATED_HOUSE; ++i)
             {
                 if (HouseInfo[i][hID] < 1 || !IsPlayerInRangeOfPoint(playerid, 1.0, HouseInfo[i][hEnterCoord][0], HouseInfo[i][hEnterCoord][1], HouseInfo[i][hEnterCoord][2])) continue;
                 PlayerInfo[playerid][pActionHouseID] = i;
@@ -4156,7 +4146,7 @@ public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
             if (PlayerInfo[playerid][pHouseChangeInt] >= 0)
             {
                 new pInt = GetPlayerInterior(playerid);
-                for (new i, s = sizeof(gHousesSetting); i < s; i++)
+                for (new i, s = sizeof(gHousesSetting); i < s; ++i)
                 {
                     if (pInt != gHousesSetting[i][g_hInt] || !IsPlayerInRangeOfPoint(playerid, 1.0, gHousesSetting[i][g_hCoordX], gHousesSetting[i][g_hCoordY], gHousesSetting[i][g_hCoordZ])) continue;
                     new str[88];
@@ -4166,7 +4156,7 @@ public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
                 }
             }
             new pVirt = GetPlayerVirtualWorld(playerid);
-            for (new i; i < MAX_CREATED_HOUSE; i++)
+            for (new i; i < MAX_CREATED_HOUSE; ++i)
             {
                 if (HouseInfo[i][hID] != pVirt || !IsPlayerInRangeOfPoint(playerid, 1.0, gHousesSetting[HouseInfo[i][hInt]][g_hCoordX], gHousesSetting[HouseInfo[i][hInt]][g_hCoordY], gHousesSetting[HouseInfo[i][hInt]][g_hCoordZ])) continue;
 
@@ -4175,7 +4165,7 @@ public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
                 return 1;
             }
         }
-        for (new i = 0; i < MAX_BUSSINES; i++)
+        for (new i = 0; i < MAX_BUSSINES; ++i)
         {
             if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]))
             {
@@ -4291,7 +4281,7 @@ public OnPlayerUpdate(playerid)
     }
     else BugTicks [playerid] = 0;
 
-    for (new i = 0; i < MAX_CREATED_HOUSE; i++)
+    for (new i = 0; i < MAX_CREATED_HOUSE; ++i)
     {
         if (IsPlayerInRangeOfPoint(playerid, 1.0, HouseInfo[i][hEnterCoord][0], HouseInfo[i][hEnterCoord][1], HouseInfo[i][hEnterCoord][2]))
         {
@@ -4306,7 +4296,7 @@ public OnPlayerUpdate(playerid)
         }
     }
 
-    for (new i = 0; i < MAX_BUSSINES; i++)
+    for (new i = 0; i < MAX_BUSSINES; ++i)
     {
         if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]))
         {
@@ -4365,7 +4355,7 @@ fpub:Freeze1sec(playerid)
 fpub:OnPlayerRegistered(playerid, pass[])
 {
     new string[1024];
-    for (new i; i < 26; i++) gPlayerWeapon[playerid][i] = WEAPON_FIST;
+    for (new i; i < 26; ++i) gPlayerWeapon[playerid][i] = WEAPON_FIST;
     SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Вы успешно зарегистрировались!");
     SetPVarInt(playerid, "PlMon", 50000);
     PlayerInfo[playerid][pDriftExp] = 5;
@@ -4418,7 +4408,7 @@ fpub:OnPlayerLogin(playerid)
         new pWeapon[26 * 11], pWeaponEx[26][11];
         cache_get_value_name(0, "weapons", pWeapon, 26 * 11);
         split(pWeapon, pWeaponEx, '|');
-        for (new i; i < 26; i++) gPlayerWeapon[playerid][i] = WEAPON:strval(pWeaponEx[i]);
+        for (new i; i < 26; ++i) gPlayerWeapon[playerid][i] = WEAPON:strval(pWeaponEx[i]);
 
         cache_get_value_int(0, "Gang", PlayerInfo[playerid][pGang]);
         cache_get_value_int(0, "GangLvl", PlayerInfo[playerid][pGangLvl]);
@@ -4430,7 +4420,7 @@ fpub:OnPlayerLogin(playerid)
         mysql_format(ServerDB, str, sizeof(str), "SELECT * FROM `bans` WHERE `NameBan` = '%e' LIMIT 1", PlayerInfo[playerid][pName]);
         mysql_tquery(ServerDB, str, "CheckBann", "d", playerid);
 
-        for (new i; i < sizeof(RandomSpawns); i++)
+        for (new i; i < sizeof(RandomSpawns); ++i)
         {
             if (GetPVarInt(playerid, "MnMode") == 1)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
             else if (GetPVarInt(playerid, "MnMode") == 2)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}Y\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
@@ -4468,7 +4458,7 @@ fpub:SpawnLogin(playerid)
         {
             ColorPlay[playerid] = ColNick[PlayerInfo[playerid][pColorNickname] - 1];
             SetPlayerColor(playerid, ColorPlay[playerid]);
-            for (new i = 0; i < MAX_PLAYERS; i++)
+            for (new i = 0; i < MAX_PLAYERS; ++i)
             {
                 SetPlayerMarkerForPlayer(i, playerid, ColorPlay[playerid]);
             }
@@ -4482,7 +4472,7 @@ fpub:SpawnLogin(playerid)
             {
                 ColorPlay[playerid] = ColNick[PlayerInfo[playerid][pColorNickname] - 1];
                 SetPlayerColor(playerid, ColorPlay[playerid]);
-                for (new i = 0; i < MAX_PLAYERS; i++)
+                for (new i = 0; i < MAX_PLAYERS; ++i)
                 {
                     SetPlayerMarkerForPlayer(i, playerid, ColorPlay[playerid]);
                 }
@@ -4491,7 +4481,7 @@ fpub:SpawnLogin(playerid)
             {
                 ColorPlay[playerid] = HexToInt(GangInfo[PlayerInfo[playerid][pGang]][gColor]);
                 SetPlayerColor(playerid, HexToInt(GangInfo[PlayerInfo[playerid][pGang]][gColor]));
-                for (new i = 0; i < MAX_PLAYERS; i++)
+                for (new i = 0; i < MAX_PLAYERS; ++i)
                 {
                     SetPlayerMarkerForPlayer(i, playerid, ColorPlay[playerid]);
                 }
@@ -4758,7 +4748,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 case 3:
                 {
                     new str[sizeof(gHousesSetting) * 40];
-                    for (new i, s = sizeof(gHousesSetting); i < s; i++)
+                    for (new i, s = sizeof(gHousesSetting); i < s; ++i)
                         format(str, sizeof str, "%sИнтерьер № %d [ %d$ ]\n", str, i + 1, gHousesSetting[i][g_hChangeCost]);
                     ShowPlayerDialog(playerid, 9893, DIALOG_STYLE_LIST, "Выберите интерьер для просмотра", str, "Выбрать", "Отмена");
                 }
@@ -4967,7 +4957,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 return ShowGangDialog(playerid, g_cSetColorPage);
             }
 
-            for (new i = 1; i < MAX_GANGS; i++)
+            for (new i = 1; i < MAX_GANGS; ++i)
             {
                 if (GangInfo[i][gCreated]) continue;
                 PlayerInfo[playerid][pGang] = i;
@@ -5196,12 +5186,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (!response) return 1;
         else
         {
-            for (new i = 0; i < MAX_BUSSINES; i++)
+            for (new i = 0; i < MAX_BUSSINES; ++i)
             {
                 if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]))
                 {
                     new buschecked = 0;
-                    for (new ii = 0; ii < MAX_BUSSINES; ii++)
+                    for (new ii = 0; ii < MAX_BUSSINES; ++ii)
                     {
                         if (BI[ii][BuyID] == PlayerInfo[playerid][pMID]) buschecked++;
                     }
@@ -5240,7 +5230,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         if (listitem == 2)
         {
-            for (new i = 0; i < MAX_BUSSINES; i++)
+            for (new i = 0; i < MAX_BUSSINES; ++i)
             {
                 if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]) && BI[i][BuyID] == PlayerInfo[playerid][pMID])
                 {
@@ -5268,7 +5258,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         if (listitem == 2)
         {
-            for (new i = 0; i < MAX_BUSSINES; i++)
+            for (new i = 0; i < MAX_BUSSINES; ++i)
             {
                 if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]))
                 {
@@ -5286,7 +5276,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (!response) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Вы отменили продажу бизнеса!");
         else
         {
-            for (new i = 0; i < MAX_BUSSINES; i++)
+            for (new i = 0; i < MAX_BUSSINES; ++i)
             {
                 if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]) && BI[i][BuyID] == PlayerInfo[playerid][pMID])
                 {
@@ -5307,7 +5297,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (!response) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Вы оставили деньги на счёте бизнеса");
         else
         {
-            for (new i = 0; i < MAX_BUSSINES; i++)
+            for (new i = 0; i < MAX_BUSSINES; ++i)
             {
                 if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]) && BI[i][BuyID] == PlayerInfo[playerid][pMID])
                 {
@@ -5334,7 +5324,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                     return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {CCFF00}Только цифры!");
             }
         }
-        for (new i = 0; i < MAX_BUSSINES; i++)
+        for (new i = 0; i < MAX_BUSSINES; ++i)
         {
             if (IsPlayerInRangeOfPoint(playerid, 1.0, BI[i][xX], BI[i][yY], BI[i][zZ]))
             {
@@ -7079,7 +7069,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
     {
         if (response)
         {
-            for (new i = 0; i < MAX_PLAYERS; i++) //убрать неон с любого транспорта
+            for (new i = 0; i < MAX_PLAYERS; ++i) //убрать неон с любого транспорта
             {
                 if (GetPlayerVehicleID(playerid) == neon[i][2])
                 {
@@ -8483,7 +8473,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             mysql_format(ServerDB, string, sizeof(string), "UPDATE `players` SET `keymenu`='1' WHERE `PID`='%d' LIMIT 1", PlayerInfo[playerid][pMID]);
             mysql_tquery(ServerDB, string, "", "");
 
-            for (new i; i < sizeof(RandomSpawns); i++)
+            for (new i; i < sizeof(RandomSpawns); ++i)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 if (GetPVarInt(playerid, "MnMode") == 1)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
@@ -8500,7 +8490,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             mysql_format(ServerDB, string, sizeof(string), "UPDATE `players` SET `keymenu`='2' WHERE `PID`='%d' LIMIT 1", PlayerInfo[playerid][pMID]);
             mysql_tquery(ServerDB, string, "", "");
 
-            for (new i; i < sizeof(RandomSpawns); i++)
+            for (new i; i < sizeof(RandomSpawns); ++i)
             {
                 DeletePlayer3DTextLabel(playerid, SpawnTextDraw[playerid][i]);
                 if (GetPVarInt(playerid, "MnMode") == 1)format(string, sizeof(string), "Д{CCFF00}обро Пожаловать на {8F30E4}Drift Dreams!\nГ{CCFF00}лавное меню на кнопку {8F30E4}ALT/2(в машине)\nВКонтакте:{CCFF00} "VK_G"\n{8F30E4}Пожалуйста, читайте правила: {CCFF00}/rules");
@@ -9275,7 +9265,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 new MyCarInfo[MAX_PLAYERS][MAX_SLOTS_CAR][PlayerCars];
                 */
                 new str[512];
-                for (new i = 0; i < MAX_SLOTS_CAR; i++)
+                for (new i = 0; i < MAX_SLOTS_CAR; ++i)
                 {
                     if (MyCarInfo[playerid][i][cID] != -1) format(str, sizeof(str), "%s\n{CCFF00}%s | {FFFFFF}Куплен", str, GetVehicleName(MyCarInfo[playerid][i][cCarid]));
                     else
@@ -9983,7 +9973,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             ColorPlay[playerid] = ColNick[listitem];
             SetPlayerColor(playerid, ColorPlay[playerid]);
             PlayerInfo[playerid][pColorNickname] = listitem + 1;
-            for (new i = 0; i < MAX_PLAYERS; i++)
+            for (new i = 0; i < MAX_PLAYERS; ++i)
             {
                 SetPlayerMarkerForPlayer(i, playerid, ColorPlay[playerid]);
             }
@@ -10612,9 +10602,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             new hashed_pass[65];
             new salt[17];
-            for (new i; i < 16; i++)
+            for (new i; i < 16; ++i)
             {
-                salt[i] = inc_gLetters[random(sizeof(inc_gLetters))];
+                switch (random(3))
+                {
+                    case 0: salt[i] = random_range_int(48, 57);
+                    case 1: salt[i] = random_range_int(65, 90);
+                    case 2: salt[i] = random_range_int(97, 122);
+                }
             }
             SHA256_Hash(inputtext, salt, hashed_pass, 65);
             new str[512];
@@ -11066,7 +11061,7 @@ fpub:VehicSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
     return 1;
 }
 
-public VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
+fpub:VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
 {
     new Float:x, Float:y, Float:z, Float:Angle;
     GetPlayerPos(playerid, x, y, z);
@@ -11513,7 +11508,7 @@ stock OneSecOnd()
     return 1;
 }
 
-public MinServ()//таймер минут на сервере
+fpub:MinServ()//таймер минут на сервере
 {
     foreach (Player, i)
     {
@@ -11546,7 +11541,7 @@ public MinServ()//таймер минут на сервере
 
 fpub:IsVehicleOccupiedCar(vehicleid)
 {
-    for (new i = 0; i < MAX_PLAYERS; i++)
+    for (new i = 0; i < MAX_PLAYERS; ++i)
     {
         if (IsPlayerInVehicle(i, vehicleid)) return 1;
     }
@@ -11575,7 +11570,7 @@ fpub:PassControl(string[])//контроль пароля на посторонние символы
     new dln, dopper;
     dln = strlen(string);
     dopper = 1;
-    for (new i = 0; i < dln; i++)
+    for (new i = 0; i < dln; ++i)
     {
         if (string[i] < 48 || (string[i] > 57 && string[i] < 65) ||
                 (string[i] > 90 && string[i] < 97) || string[i] > 122)
@@ -11591,7 +11586,7 @@ fpub:InpTxtControl(string[])//контроль вводимого текста на посторонние символы
     new dln, dopper;
     dln = strlen(string);
     dopper = 1;
-    for (new i = 0; i < dln; i++)
+    for (new i = 0; i < dln; ++i)
     {
         if (string[i] < 32 || string[i] == 37 || string[i] == 126 ||
                 string[i] == 127 || string[i] == 152 || string[i] == 160)
@@ -12121,7 +12116,7 @@ CMD:try(playerid, params[])
 flags:cmchat(CMD_LOGGED)
 CMD:cmchat(playerid)
 {
-    for (new i = 0; i < 60; i++)
+    for (new i = 0; i < 60; ++i)
     {
         SendClientMessage(playerid, -1, " ");
     }
@@ -12190,7 +12185,7 @@ fpub:atab(playerid)
     {
         new fulldialog[3000], str[3000];
         fulldialog = "{FF0000}Уровень\t{CCFF00}Ник\t{FFFF00}Статус\n\n";
-        for (new i = 0; i < cache_num_rows(); i++)
+        for (new i = 0; i < cache_num_rows(); ++i)
         {
             new name[MAX_PLAYER_NAME];
             cache_get_value_name(i, "aname", name, MAX_PLAYER_NAME);
@@ -12334,7 +12329,7 @@ fpub:LoadHouses()
 
         UpdateHouseInfo(hid);
     }
-    for (new i, s = sizeof(gHousesSetting); i < s; i++) CreateDynamicPickup(19134, 1, gHousesSetting[i][g_hCoordX], gHousesSetting[i][g_hCoordY], gHousesSetting[i][g_hCoordZ], -1, gHousesSetting[i][g_hInt], -1, 15.0);
+    for (new i, s = sizeof(gHousesSetting); i < s; ++i) CreateDynamicPickup(19134, 1, gHousesSetting[i][g_hCoordX], gHousesSetting[i][g_hCoordY], gHousesSetting[i][g_hCoordZ], -1, gHousesSetting[i][g_hInt], -1, 15.0);
     printf("Дома успешно загружены. Всего загружено %d домов. Потрачено на загрузку: %i ms", cache_num_rows(), GetTickCount() - time);
     MAX_CREATED_HOUSE = cache_num_rows();
     return 1;
@@ -12343,7 +12338,7 @@ fpub:LoadHouses()
 stock CreateHouse(klass, cost, Float:x, Float:y, Float:z)
 {
     if (MAX_CREATED_HOUSE >= MAX_CREATE_HOUSE) return -1;
-    for (new i; i < MAX_CREATE_HOUSE; i++)
+    for (new i; i < MAX_CREATE_HOUSE; ++i)
     {
         if (HouseInfo[i][hID]) continue;
         HouseInfo[i][hID] = -1;
@@ -12664,7 +12659,7 @@ fpub:GetBussinesOwnerName(iddb, idbus)
 
 stock CreateBussinesOnMap(colums)
 {
-    for (new i = 0; i < colums; i++)
+    for (new i = 0; i < colums; ++i)
     {
         new str[512];
         BI[i][bPickupID] = CreateDynamicPickup(1274, 1, BI[i][xX], BI[i][yY], BI[i][zZ], 0, 0, -1, 30.0);
@@ -12682,7 +12677,7 @@ CMD:bushelp(playerid)
     if (AI[playerid][aLevel]  < 4) return 1;
     new string[2048];
     format(string, sizeof(string), "{FFFFFF}Типы бизнесов:\n");
-    for (new i = 0; i < sizeof(btipname); i++)
+    for (new i = 0; i < sizeof(btipname); ++i)
     {
         format(string, sizeof(string), "{FFFFFF}%sID:{CCFF00}%d - %s{FFFFFF}. Рекомендуемая цена: {CCFF00}$%d{FFFFFF}\n", string, i, btipname[i], recommended_cost_bus[i]);
     }
@@ -12773,7 +12768,7 @@ stock PayDay(h, m)
     {
         /////////////////////////выдача зп бизам
         new bool:on[MAX_BUSSINES] = {false};
-        for (new i = 0; i < MAX_BUSSINES; i++)
+        for (new i = 0; i < MAX_BUSSINES; ++i)
         {
             if (BI[i][bID] > 0 && BI[i][BuyID] > 0)
             {
@@ -13790,7 +13785,7 @@ CMD:leaders(playerid)
     format(str, sizeof(str), "{00FFFF}OnLine лидеры группы:{FFFFFF}\n");
 
     new c = 0;
-    for (new i = 0; i < MAX_PLAYERS; i++)
+    for (new i = 0; i < MAX_PLAYERS; ++i)
     {
         if (IsPlayerConnected(i) && PlayerInfo[i][pGang] > 0 && PlayerInfo[i][pGangLvl] >= 6)
         {

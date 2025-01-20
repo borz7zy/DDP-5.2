@@ -21,7 +21,7 @@ fpub:dialog_register(pid, dialogid, response, listitem, string:inputtext[]){
     }
     new hashed_pass[65];
     new salt[17];
-    for (new i; i < 16; i++)
+    for (new i; i < 16; ++i)
     {
         switch(random(3)){
             case 0: salt[i] = random_range_int(48, 57);
