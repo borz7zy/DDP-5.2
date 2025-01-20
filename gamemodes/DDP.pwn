@@ -1,6 +1,7 @@
 //#snippet new_cmd CMD:cmd_name(playerid) {\n\treturn 1;\n}
 //#snippet new_cmd_p CMD:cmd_name(playerid, const params[]) {\n\treturn 1;\n}
 //#snippet new_fpub fpub:func_name(){\n\treturn 1;\n}
+//#snippet new_dialog fpub:func_name(pid, dialogid, response, listitem, string:inputtext[]){\n\treturn 1;\n}
 
 #define MIXED_SPELLINGS
 
@@ -1965,46 +1966,16 @@ public OnPlayerConnect(playerid)
 
 fpub:CheckRegister(playerid)
 {
-    new string[1024];
     if (cache_num_rows() > 0)
     {
         cache_get_value_name(0, "Pass", PlayerInfo[playerid][pKey], 65);
         cache_get_value_name(0, "Hash", PlayerInfo[playerid][pHASH], 17);
-        ShowPlayerLoginDialog(playerid);
+        DialogLoginShow(playerid);
     }
     else
     {
-        format(string, sizeof(string), "{CCFF00}КРАТКИЕ ПРАВИЛА СЕРВЕРА:\
-		\n- {FFAA00}Запрещено использовать ники других игроков или администрации.\
-		\n- {FFAA00}Запрещено оскорблять других игроков и мешать им играть.\
-		\n- {FFAA00}Запрещено просить админку.\
-		\n- {FFAA00}Запрещено рекламировать посторонние сайты/сервера.");
-        format(string, sizeof(string), "%s\
-		\n- {FFAA00}Запрещено убивать игроков транспортным средством (ДБ).\
-		\n- {FFAA00}Запрещено матерится и флудить в чат.\
-		\n- {FFAA00}Запрещено использовать любые читы, в особенности вредоносные!\
-		\n- {FFAA00}Запрещена продажа чего либо, за реальные деньги.\
-		\n\n{CCFF00}НЕБОЛЬШОЙ FAQ ПО СЕРВЕРУ:", string);
-        format(string, sizeof(string), "%s\
-		\n- {FFAA00}Для вызова команд сервера используйте /cmd.\
-		\n- {FFAA00}На сервере присутствует удобное меню (ALT - пешком, кнопка 2 - в машине)\
-		\n\n{FFAA00}Придумайте сложный пароль, чтобы избежать взлома вашего аккаунта.\
-		\n{CCFF00}Администрация {8F30E4}DDP {CCFF00}- не несёт ответственности за потеряные аккаунты.\
-		\n\n{FFAA00}Ваш ник: {FF0000}%s", string, PlayerInfo[playerid][pName]);
-        ShowPlayerDialog(playerid, 0, DIALOG_STYLE_INPUT, "{8F30E4}>>[РЕГИСТРАЦИЯ]<<", string, "Войти", "Отмена");
+        dialog_register_show(playerid);
     }
-    return 1;
-}
-
-stock ShowPlayerLoginDialog(playerid)
-{
-    new string[1024];
-    format(string, sizeof(string), "{FFFFFF}Участились взломы игровых аккаунтов игроков!\
-	\n{FFFFFF}Не станьте жертвой мошенников, не вводите свой пароль на других проектах!\
-	\n{FFFFFF}Администрация {8F30E4}DDP сервера {FFFFFF}- не несёт ответственности за потеряные аккаунты.\
-	\n\n{FFFFFF}Ваш ник: {8F30E4}%s.\
-	\n{FFFFFF}Введите свой пароль в поле ниже:", PlayerInfo[playerid][pName]);
-    ShowPlayerDialog(playerid, 1, DIALOG_STYLE_INPUT, "{8F30E4}>>[АВТОРИЗАЦИЯ НА DREAMS]<<", string, "Войти", "Отмена");
     return 1;
 }
 
@@ -4837,119 +4808,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             HouseInfo[hid][hInt] = change_int;
             SaveHouse(hid);
         }
-        // the end houses dialogs. by Uporoty
-        case 1:
-        {
-            if (!response)
-            {
-                Kick(playerid);
-                return 1;
-            }
-            if (PassControl(inputtext) == 0)
-            {
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В пароле можно использовать ТОЛЬКО латинские");
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}символы: от a до z , от A до Z , и цифры от 0 до 9 !");
-                ShowPlayerLoginDialog(playerid);
-                return 1;
-            }
-            if (strlen(inputtext) < 6) return ShowPlayerLoginDialog(playerid);
-            new hashed_pass[65];
-            SHA256_Hash(inputtext, PlayerInfo[playerid][pHASH], hashed_pass, 65);
-            if (strcmp(PlayerInfo[playerid][pKey], hashed_pass) == 0)
-            {
-                //готово
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Вы успешно авторизировались!");
-                new query[256];
-                mysql_format(ServerDB, query, sizeof(query), "SELECT * FROM `players` WHERE `PlayerName`='%s' LIMIT 1", PlayerInfo[playerid][pName]);
-                mysql_tquery(ServerDB, query, "OnPlayerLogin", "i", playerid);
-            }
-            else
-            {
-                //отсосали хуй
-                PlayerInfo[playerid][pPodbor]++;
-                if (5 - PlayerInfo[playerid][pPodbor] == 0)
-                {
-                    SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF} Вы были кикнуты за подбор пароля!");
-                    Kick(playerid);
-                    return 1;
-                }
-                ShowPlayerLoginDialog(playerid);
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS"{FFFFFF}Вы ввели неверный пароль!");
-                format(string, 64, "%s{FFFFFF} У Вас осталось %d попытки!", NS, 5 - PlayerInfo[playerid][pPodbor]);
-                SendClientMessage(playerid, COLOR_VIOLET, string);
-            }
-            return 1;
-        }
-
-        case 0:
-        {
-            new strr[1024];
-            if (!response)
-            {
-                Kick(playerid);
-                return 1;
-            }
-            if (PassControl(inputtext) == 0)
-            {
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В пароле можно использовать ТОЛЬКО латинские");
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}символы: от a до z , от A до Z , и цифры от 0 до 9 !");
-                format(strr, sizeof(strr), "{FF0000}КРАТКИЕ ПРАВИЛА СЕРВЕРА:\
-\n- {8F30E4}Запрещено использовать ники других игроков или администрации.\
-\n- {8F30E4}Запрещено оскорблять других игроков и мешать им играть.\
-\n- {8F30E4}Запрещено просить админку.\
-\n- {8F30E4}Запрещено рекламировать посторонние сайты/сервера.");
-                format(strr, sizeof(strr), "%s\
-\n- {8F30E4}Запрещено убивать игроков транспортным средством (ДБ).\
-\n- {8F30E4}Запрещено матерится и флудить в чат.\
-\n- {8F30E4}Запрещено использовать любые читы, в особенности вредоносные!\
-\n- {8F30E4}Запрещена продажа чего либо, за реальные деньги.\
-\n\n{FF0000}НЕБОЛЬШОЙ FAQ ПО СЕРВЕРУ:", strr);
-                format(strr, sizeof(strr), "%s\
-\n- {8F30E4}Для вызова команд сервера используйте /cmd.\
-\n- {8F30E4}На сервере присутствует удобное меню (ALT - пешком, кнопка 2 - в машине)\
-\n\n{FF0000}Придумайте сложный пароль, чтобы избежать взлома вашего аккаунта.\
-\n{FF0000}Администрация {00FFAA}DDP сервера {FF0000}- не несёт ответственности за потеряные аккаунты.\
-\n\n{FF0000}Ваш ник: {8F30E4}%s", strr, PlayerInfo[playerid][pName]);
-                ShowPlayerDialog(playerid, 0, DIALOG_STYLE_INPUT, ">>[РЕГИСТРАЦИЯ НА DREAMS]<<", strr, "Войти", "Отмена");
-                return 1;
-            }
-            if (strlen(inputtext) < 6)
-            {
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Символов в пароле должно быть не меньше 6!");
-                SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}символы: от a до z , от A до Z , и цифры от 0 до 9 !");
-                format(strr, sizeof(strr), "{FF0000}КРАТКИЕ ПРАВИЛА СЕРВЕРА:\
-\n- {8F30E4}Запрещено использовать ники других игроков или администрации.\
-\n- {8F30E4}Запрещено оскорблять других игроков и мешать им играть.\
-\n- {8F30E4}Запрещено просить админку.\
-\n- {8F30E4}Запрещено рекламировать посторонние сайты/сервера.");
-                format(strr, sizeof(strr), "%s\
-\n- {8F30E4}Запрещено убивать игроков транспортным средством (ДБ).\
-\n- {8F30E4}Запрещено матерится и флудить в чат.\
-\n- {8F30E4}Запрещено использовать любые читы, в особенности вредоносные!\
-\n- {8F30E4}Запрещена продажа чего либо, за реальные деньги.\
-\n\n{FF0000}НЕБОЛЬШОЙ FAQ ПО СЕРВЕРУ:", strr);
-                format(strr, sizeof(strr), "%s\
-\n- {8F30E4}Для вызова команд сервера используйте /cmd.\
-\n- {8F30E4}На сервере присутствует удобное меню (ALT - пешком, кнопка 2 - в машине)\
-\n\n{FF0000}Придумайте сложный пароль, чтобы избежать взлома вашего аккаунта.\
-\n{FF0000}Администрация {00FFAA}DDP сервера {FF0000}- не несёт ответственности за потеряные аккаунты.\
-\n\n{FF0000}Ваш ник: {8F30E4}%s", strr, PlayerInfo[playerid][pName]);
-                ShowPlayerDialog(playerid, 0, DIALOG_STYLE_INPUT, ">>[РЕГИСТРАЦИЯ НА DREAMS]<<", strr, "Войти", "Отмена");
-                return 1;
-            }
-            new hashed_pass[65];
-            new salt[17];
-            for (new i; i < 16; i++)
-            {
-                salt[i] = inc_gLetters[random(sizeof(inc_gLetters))];
-            }
-            SHA256_Hash(inputtext, salt, hashed_pass, 65);
-            new query[512];
-            mysql_format(ServerDB, query, sizeof(query), "INSERT INTO `players` (`PlayerName`, `Pass`, `HASH`, `Money`, `Kills`, `Deaths`, `TDReg`, `Combo`, `IPAdr`, `Skin`) VALUES ('%e','%s','%e','50000','0','0','%d','1','%e','-1')", PlayerInfo[playerid][pName], hashed_pass, salt, gettime(), PlayerInfo[playerid][pIPAdr]);
-            mysql_tquery(ServerDB, query, "OnPlayerRegistered", "is", playerid, inputtext);
-            PlayerInfo[playerid][pTDReg] = gettime();
-            return 1;
-        }
+            // the end houses dialogs. by Uporoty
     }
     if (dialogid == DIALOG_DUELWEAPONS)
     {
@@ -5499,6 +5358,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         Teleport(playerid, JobTeleport[listitem][0], JobTeleport[listitem][1], JobTeleport[listitem][2], 0, 0, false, 0, false);
         return 1;
     }
+
     if (dialogid == 2503)
     {
         if (!response) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Вы отказались от работы грузчика!");
@@ -5513,6 +5373,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (GetPVarInt(playerid, "goodspawn") == 0) SetPVarInt(playerid, "goodspawn", 1);
         return 1;
     }
+
     if (dialogid == 2504)
     {
         if (!response) return 1;
@@ -5527,6 +5388,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         indexMeshok[playerid] = 0;
         DisablePlayerCheckpoint(playerid);
     }
+
     if (dialogid == 4) //игровое меню
     {
         if (AI[playerid][aSpectateID] != INVALID_PLAYER_ID) return SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}В слежке меню недоступно!");
@@ -5604,6 +5466,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         return 1;
     }
+
     if (dialogid == 4310)
     {
         if (!response) return PlayerDialogMenu(playerid);
@@ -5615,6 +5478,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         if (listitem == 5) return mysql_tquery(ServerDB, "SELECT `PlayerName`, `ExpRecord` FROM `players` ORDER BY `ExpRecord` DESC LIMIT 10", "TopRecordDrift", "d", playerid);
         return 1;
     }
+
     if (dialogid == 900)
     {
         new strcc[2048];
@@ -5658,6 +5522,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         }
         return 1;
     }
+
     if (dialogid == 10) //меню Тюнинг
     {
         if (response)
@@ -13951,3 +13816,12 @@ CMD:test_cmd(playerid)
     return 1;
 }
 alias:test_cmd("tcmd")
+
+stock random_range_int(min, max)
+{
+    return random(max * 2) % (max - min + 1) + min;
+}
+
+//Dialogs
+#include "..\..\modules\dialogs\account_reg.inc"
+#include "..\..\modules\dialogs\account_login.inc"
