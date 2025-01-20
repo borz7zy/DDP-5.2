@@ -2865,7 +2865,7 @@ stock OnPlayerSave(playerid)
         new str[4096];
 
         mysql_format(ServerDB, str, sizeof(str), "UPDATE `players` SET `Money`='%d', `Kills`='%d', `MinLog`='%d', `Deaths`='%d',\
-		`Combo`='%d',`RecPM`='%d',`IPAdr`='%s',`keymenu`='%d',`Skin`='%d',`DriftExp`='%d',`VIP`='%d',`vsx`='%f',`vsy`='%f',`vsz`='%f',`vsa`='%f'\
+		`Combo`='%d',`RecPM`='%d',`IPAdr`='%s',`keymenu`='%d',`Skin`='%d',`DriftExp`='%d',`VIP`='%d',`vsx`='%f',`vsy`='%f',`vsz`='%f',`vsa`='%f',\
 		`houseid`='%d', `ExpRecord`='%d', `weapons`='%s', `ColorPlayer`='%d', `Gang`='%d', `GangLvl`='%d',`SpawnChange`='%d' WHERE `PID`='%d' LIMIT 1",
                      GetPVarInt(playerid, "PlMon"), PlayerInfo[playerid][pKills], PlayerInfo[playerid][pMinlog], PlayerInfo[playerid][pDeaths], PlayerInfo[playerid][pCombo],
                      PlayerInfo[playerid][pRecPM], PlayerInfo[playerid][pIPAdr], GetPVarInt(playerid, "MnMode"), PlayerInfo[playerid][pSkin],
