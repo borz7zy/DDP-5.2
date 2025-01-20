@@ -29,7 +29,7 @@ if url_link:
 
 if server_pwd:
     data['password'] = server_pwd
-    if server_pwd is "none":
+    if server_pwd == "none":
         data['password'] = ""
 
 with open(file_path, 'w') as file:
