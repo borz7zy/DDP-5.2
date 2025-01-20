@@ -8,7 +8,7 @@
 
 import os
 
-file_path = './scriptfiles/mysql.ini'
+file_path = './mysql.ini'
 
 mysql_host = os.getenv('DDP_MYSQL_HOST')
 mysql_user = os.getenv('DDP_MYSQL_USER')
