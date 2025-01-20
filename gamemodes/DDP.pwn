@@ -11076,7 +11076,7 @@ fpub:VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
     }
     if (playcar[playerid] == 0) //если у игрока нет своего транспорта, то:
     {
-        playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, 0); //создать новый транспорт
+        playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, -1); //создать новый транспорт
         LinkVehicleToInterior(playcar[playerid], GetPlayerInterior(playerid));//подключить транспорт к интерьеру игрока
         SetVehicleVirtualWorld(playcar[playerid], GetPlayerVirtualWorld(playerid));//установить транспорту виртуальный мир игрока
         PutPlayerInVehicle(playerid, playcar[playerid], 0);//посадить игрока на место водителя
@@ -11101,7 +11101,7 @@ fpub:VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
             DestroyObject(ObjectSelect[GetPlayerVehicleID(playerid)][0]);//Удаление тюнинг элементов
             DestroyObject(ObjectSelect[GetPlayerVehicleID(playerid)][1]);
             DestroyVehicle(playcar[playerid]);//удалить старый транспорт
-            playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, 0); //создать новый транспорт
+            playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, -1); //создать новый транспорт
             LinkVehicleToInterior(playcar[playerid], GetPlayerInterior(playerid));//подключить транспорт к интерьеру игрока
             SetVehicleVirtualWorld(playcar[playerid], GetPlayerVirtualWorld(playerid));//установить транспорту виртуальный мир игрока
             PutPlayerInVehicle(playerid, playcar[playerid], 0);//посадить игрока на место водителя
@@ -11130,7 +11130,7 @@ fpub:VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
                 DestroyObject(ObjectSelect[GetPlayerVehicleID(playerid)][1]);
 
                 DestroyVehicle(playcar[playerid]);//удалить старый транспорт
-                playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, 0); //создать новый транспорт
+                playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, -1); //создать новый транспорт
                 LinkVehicleToInterior(playcar[playerid], GetPlayerInterior(playerid));//подключить транспорт к интерьеру игрока
                 SetVehicleVirtualWorld(playcar[playerid], GetPlayerVirtualWorld(playerid));//установить транспорту виртуальный мир игрока
                 PutPlayerInVehicle(playerid, playcar[playerid], 0);//посадить игрока на место водителя
@@ -11145,7 +11145,7 @@ fpub:VehicSecSpawn(playerid, vehid, vehcol1, vehcol2, dispz)
                 DestroyObject(ObjectSelect[GetPlayerVehicleID(playerid)][1]);
 
                 DestroyVehicle(playcar[playerid]);//удалить старый транспорт
-                playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, 0); //создать новый транспорт
+                playcar[playerid] = CreateVehicle(vehid, x, y, z + dispz, Angle, vehcol1, vehcol2, -1); //создать новый транспорт
                 LinkVehicleToInterior(playcar[playerid], GetPlayerInterior(playerid));//подключить транспорт к интерьеру игрока
                 SetVehicleVirtualWorld(playcar[playerid], GetPlayerVirtualWorld(playerid));//установить транспорту виртуальный мир игрока
                 PutPlayerInVehicle(playerid, playcar[playerid], 0);//посадить игрока на место водителя
