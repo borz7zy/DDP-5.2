@@ -1912,32 +1912,32 @@ public OnPlayerConnect(playerid)
     {
         case 0:
         {
-            PlayAudioStreamForPlayer(playerid, "http://wh503.web1.bhweb.ru/music/1.mp3");
+            PlayAudioStreamForPlayer(playerid, "http://s0s4sgw48sog0gkwow4c0gcs.45.84.1.51.sslip.io/ddpmusic/1.mp3");
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сейчас играет: {CCFF00}4B - Bomboclat (Infuze Remix)");
         }
         case 1:
         {
-            PlayAudioStreamForPlayer(playerid, "http://wh503.web1.bhweb.ru/music/2.mp3");
+            PlayAudioStreamForPlayer(playerid, "http://s0s4sgw48sog0gkwow4c0gcs.45.84.1.51.sslip.io/ddpmusic/2.mp3");
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сейчас играет: {CCFF00}Borgore & Sikdope - Unicorn Zombie Apocalypse (Vladisse Festival Trap Remix)");
         }
         case 2:
         {
-            PlayAudioStreamForPlayer(playerid, "http://wh503.web1.bhweb.ru/music/3.mp3");
+            PlayAudioStreamForPlayer(playerid, "http://s0s4sgw48sog0gkwow4c0gcs.45.84.1.51.sslip.io/ddpmusic/3.mp3");
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сейчас играет: {CCFF00}DJ GErom - Trance Zombie (DJ GErom) [2014]");
         }
         case 3:
         {
-            PlayAudioStreamForPlayer(playerid, "http://wh503.web1.bhweb.ru/music/4.mp3");
+            PlayAudioStreamForPlayer(playerid, "http://s0s4sgw48sog0gkwow4c0gcs.45.84.1.51.sslip.io/ddpmusic/4.mp3");
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сейчас играет: {CCFF00}Jay Hardway - Bootcamp");
         }
         case 4:
         {
-            PlayAudioStreamForPlayer(playerid, "http://wh503.web1.bhweb.ru/music/5.mp3");
+            PlayAudioStreamForPlayer(playerid, "http://s0s4sgw48sog0gkwow4c0gcs.45.84.1.51.sslip.io/ddpmusic/5.mp3");
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сейчас играет: {CCFF00}Post Malone ft. 21Savage - Rockstar");
         }
         case 5:
         {
-            PlayAudioStreamForPlayer(playerid, "http://wh503.web1.bhweb.ru/music/6.mp3");
+            PlayAudioStreamForPlayer(playerid, "http://s0s4sgw48sog0gkwow4c0gcs.45.84.1.51.sslip.io/ddpmusic/6.mp3");
             SendClientMessage(playerid, COLOR_VIOLET, ""NS" {FFFFFF}Сейчас играет: {CCFF00}Martin Garrix, David Guetta - So Far Away (Bad Decisions Remix)");
         }
     }
