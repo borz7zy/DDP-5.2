@@ -4,6 +4,8 @@
 
 #define MIXED_SPELLINGS
 
+#define CGEN_MEMORY 20000
+
 #include <open.mp>
 #include <Pawn.RakNet>
 #tryinclude <rakcheat>
