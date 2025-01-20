@@ -242,63 +242,63 @@ fpub:select_car_from_type(pid, dialogid, response, listitem, string:inputtext[])
     switch(PLAYER_CAR_DIALOG_SELECTED[pid]){
         case 0:{
             carid = StreetRacerCars[listitem][modelid];
-            car_name = StreetRacerCars[listitem][name];
+            sscanf(StreetRacerCars[listitem][name], "s[32]", car_name);
         }
         case 1:{
             carid = RaceCars[listitem][modelid];
-            car_name = RaceCars[listitem][name];
+            sscanf(RaceCars[listitem][name], "s[32]", car_name);
         }
         case 2:{
             carid = LowriderCars[listitem][modelid];
-            car_name = LowriderCars[listitem][name];
+            sscanf(LowriderCars[listitem][name], "s[32]", car_name);
         }
         case 3:{
             carid = TwoDoorsSedans[listitem][modelid];
-            car_name = TwoDoorsSedans[listitem][name];
+            sscanf(TwoDoorsSedans[listitem][name], "s[32]", car_name);
         }
         case 4:{
             carid = FourDoorsSedans[listitem][modelid];
-            car_name = FourDoorsSedans[listitem][name];
+            sscanf(FourDoorsSedans[listitem][name], "s[32]", car_name);
         }
         case 5:{
             carid = Jeeps[listitem][modelid];
-            car_name = Jeeps[listitem][name];
+            sscanf(Jeeps[listitem][name], "s[32]", car_name);
         }
         case 6:{
             carid = PowerCars[listitem][modelid];
-            car_name = PowerCars[listitem][name];
+            sscanf(PowerCars[listitem][name], "s[32]", car_name);
         }
         case 7:{
             carid = WorkCars[listitem][modelid];
-            car_name = WorkCars[listitem][name];
+            sscanf(WorkCars[listitem][name], "s[32]", car_name);
         }
         case 8:{
             carid = VanCars[listitem][modelid];
-            car_name = VanCars[listitem][name];
+            sscanf(VanCars[listitem][name], "s[32]", car_name);
         }
         case 9:{
             carid = FunnyCars[listitem][modelid];
-            car_name = FunnyCars[listitem][name];
+            sscanf(FunnyCars[listitem][name], "s[32]", car_name);
         }
         case 10:{
             carid = BicyclesMotorcycles[listitem][modelid];
-            car_name = BicyclesMotorcycles[listitem][name];
+            sscanf(BicyclesMotorcycles[listitem][name], "s[32]", car_name);
         }
         case 11:{
             carid = TransportationCars[listitem][modelid];
-            car_name = TransportationCars[listitem][name];
+            sscanf(TransportationCars[listitem][name], "s[32]", car_name);
         }
         case 12:{
             carid = StateCars[listitem][modelid];
-            car_name = StateCars[listitem][name];
+            sscanf(StateCars[listitem][name], "s[32]", car_name);
         }
         case 13:{
             carid = AirCars[listitem][modelid];
-            car_name = AirCars[listitem][name];
+            sscanf(AirCars[listitem][name], "s[32]", car_name);
         }
         case 14:{
             carid = WaterCars[listitem][modelid];
-            car_name = WaterCars[listitem][name];
+            sscanf(WaterCars[listitem][name], "s[32]", car_name);
         }
     }
     SendClientMessage(pid, COLOR_VIOLET, "%s{FFFFFF} Вы выбрали {CCFF00}%s", NS, car_name);
