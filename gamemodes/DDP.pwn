@@ -26,6 +26,8 @@
 
 // #pragma dynamic 50484
 
+#include "..\..\modules\mysql_tables.inc"
+
 #define MAX_GANGS 1000
 
 enum( <<= 1)
@@ -771,7 +773,8 @@ enum pInfo
     pName[MAX_PLAYER_NAME],
     pKey[65],
     pHASH[17],
-    pTDReg[256],
+    pTDReg,
+    pMoney,
     pIPAdr[17],
     pMinlog,
     pReg,
@@ -780,6 +783,7 @@ enum pInfo
     pDeaths,
     pRecPM,
     pCombo,
+    pKeyMenu,
     pSkin,
     pPodbor,
     pGang,
@@ -813,6 +817,65 @@ enum pInfo
     pPermissions
 };
 new PlayerInfo[MAX_PLAYERS][pInfo];
+
+static const base_string_cache[] = "cache:player:";
+#define MAX_LENGHT_FIELD 128
+enum cache_items_types
+{
+    ct_int, //Числа
+    ct_float, //дробные числа (числа с плавающей точкой)
+    ct_string //строки
+};
+enum cache_items
+{
+    cache_item[MAX_LENGHT_FIELD],		//Назание в базе данных, оно же будет юзаться в кеш системе
+    cache_item_type,        			//Тип данных который хранится в переменной (выше коммент чек)
+    variable_attached,      			//название переменной в списке энумерейтед pInfo
+    bool:loadable,          			//будет ли загружен при проверке в базе данных (true - будет, false - будет проигнорирован)
+    bool:save_access,                   //будет ли сохранятся в базу данных
+    bool:primary_mysql,                 //уникальный тип данных? (MySQL для создания отсутствтующей таблицы)
+    bool:auto_increment,                //автоматически перечисляемый тип данных (MySQL для создания отсутствтующей таблицы)?
+    default_int,                        //стандартное значение если это int (-1 - нет стандартного значения)
+    default_float,                      //стандартное значение если это float (-1.0 - нет стандартного значения)
+    default_string[32]                  //стандартное значение если это string ("none" - нет стандартного значения)
+};
+
+static const cache_params[][cache_items] =
+{
+    {"PID", ct_int, pMID, true, false, true, true, -1, - 1.0, "none"},
+    {"PlayerName", ct_string, pName, true, true, true, false, -1, - 1.0, "none"},
+    {"TDReg", ct_int, pTDReg, true, true, false, false, 0, - 1.0, "none"},
+    {"Money", ct_int, pMoney, true, true, false, false, 50000, - 1.0, "none"},
+    {"DriftExp", ct_int, pDriftExp, true, true, false, false, 5, - 1.0, "none"},
+    {"ExpRecord", ct_int, pExpRecord, true, true, false, false, 0, - 1.0, "none"},
+    {"Kills", ct_int, pKills, true, true, false, false, 0, - 1.0, "none"},
+    {"MinLog", ct_int, pMinlog, true, true, false, false, 0, - 1.0, "none"},
+    {"Deaths", ct_int, pDeaths, true, true, false, false, 0, - 1.0, "none"},
+    {"Combo", ct_int, pCombo, true, true, false, false, 1, - 1.0, "none"},
+    {"VIP", ct_int, pVIP, true, true, false, false, 0, - 1.0, "none"},
+    {"RecPM", ct_int, pRecPM, true, true, false, false, 1, - 1.0, "none"},
+    {"houseid", ct_int, pHouseID, true, true, false, false, 0, - 1.0, "none"},
+    {"IPAdr", ct_string, pIPAdr, true, true, false, false, -1, - 1.0, "localhost"},
+    {"keymenu", ct_int, pKeyMenu, true, true, false, false, 1, - 1.0, "none"},
+    {"Pass", ct_string, pKey, true, true, false, false, -1, - 1.0, "none"},
+    {"HASH", ct_string, pHASH, true, true, false, false, -1, - 1.0, "none"},
+    {"Skin", ct_int, pSkin, true, true, false, false, 0, - 1.0, "none"},
+    {"ColorPlayer", ct_int, pColorNickname, true, true, false, false, 0, - 1.0, "none"},
+    {"SpawnChange", ct_int, pSpawnChange, true, true, false, false, 0, - 1.0, "none"},
+    {"Labirint1", ct_int, Labirint1, true, true, false, false, 0, - 1.0, "none"},
+    {"TrackMania1", ct_int, TrackMania1, true, true, false, false, 0, - 1.0, "none"},
+    {"TrackMania2", ct_int, TrackMania2, true, true, false, false, 0, - 1.0, "none"},
+    {"TrackMania3", ct_int, TrackMania3, true, true, false, false, 0, - 1.0, "none"},
+    {"Warns", ct_int, pWarns, true, true, false, false, 0, - 1.0, "none"},
+    {"sex", ct_int, pSex, true, true, false, false, 0, - 1.0, "none"},
+    {"Gang", ct_int, pGang, true, true, false, false, 0, - 1.0, "none"},
+    {"GangLvl", ct_int, pGangLvl, true, true, false, false, 0, - 1.0, "none"},
+    {"vsx", ct_float, pvsx, true, true, false, false, -1, 0.0, "none"},
+    {"vsy", ct_float, pvsy, true, true, false, false, -1, 0.0, "none"},
+    {"vsz", ct_float, pvsz, true, true, false, false, -1, 0.0, "none"},
+    {"vsa", ct_float, pvsa, true, true, false, false, -1, 0.0, "none"}
+};
+
 new WEAPON:gPlayerWeapon[MAX_PLAYERS][26];
 new gPlayerLastStateWeapon[MAX_PLAYERS][128];
 
@@ -1178,7 +1241,7 @@ stock NulledPlayer(playerid)
     PlayerInfo[playerid][pName][0] = EOS;
     PlayerInfo[playerid][pKey][0] = EOS;
     PlayerInfo[playerid][pHASH][0] = EOS;
-    PlayerInfo[playerid][pTDReg][0] = EOS;
+    PlayerInfo[playerid][pTDReg] = 0;
     PlayerInfo[playerid][pIPAdr][0] = EOS;
     PlayerInfo[playerid][pMinlog] = 0;
     PlayerInfo[playerid][pReg] = 0;
@@ -1476,6 +1539,8 @@ public OnGameModeInit()
     ServerDB = mysql_connect_file();
     //mysql_log(ALL);
     mysql_set_charset("cp1251");
+
+    CreatePlayerTable();
 
     SetTimer("SpamMessage", 300000, true);
 
@@ -9721,7 +9786,6 @@ stock OneSecOnd()
             ShowPlayerDialog(i, DIALOG_ZERO, DIALOG_STYLE_MSGBOX, ">>[РЕСТАРТ СЕРВЕРА]<<", "{CCFF00}Внимание!\n{FFFFFF}Вы были кикнуты по рестарту сервера. Подключитесь повторно через минуту!", "ОК", "");
             Kick(i);
         }
-        SendRconCommand("password FEFEWFWE&RF%DF^&SD%");
     }
     if (hour == 2 && minute == 59 && second == 50)
     {
