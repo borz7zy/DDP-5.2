@@ -21,7 +21,7 @@
 #include <mapandreas>
 // #include <jit>
 #include <YSI\YSI_Visual\y_dialog>
-
+#include <MXini>
 #include <redis>
 
 // #pragma dynamic 50484
@@ -90,6 +90,7 @@ enum
 #define fpub:%0(%1) forward %0(%1); public %0(%1)
 
 new MySQL:ServerDB;
+new Redis:r_client;
 
 //==========================Money Bag========================
 enum mbinfo
@@ -1480,6 +1481,29 @@ public OnGameModeInit()
     mysql_tquery(ServerDB, "SELECT * FROM `gangs` ORDER BY `gID` ASC", "LoadGangs", "");
     mysql_tquery(ServerDB, "SELECT * FROM `houses` ORDER BY `id` ASC", "LoadHouses", "");
     mysql_tquery(ServerDB, "SELECT * FROM `bussines` ORDER BY `id` ASC", "LoadBussines", "");
+    new iniFile = ini_openFile("redis_connect.ini");
+    new rhost[128];
+    new rport;
+    new rauth[256];
+    if (iniFile == INI_OK)
+    {
+        ini_getString(iniFile, "host", rhost);
+        ini_getInteger(iniFile, "port", rport);
+        ini_getString(iniFile, "auth", rauth);
+        ini_closeFile(iniFile);
+    }
+    new rc = Redis_Connect(rhost, rport, rauth, r_client);
+    if (rc == REDIS_ERROR_CONNECT_GENERIC
+            || rc ==  REDIS_ERROR_CONNECT_FAIL
+            || rc == REDIS_ERROR_CONNECT_AUTH)
+    {
+        printf("Error connect to Redis server, shutdown!");
+        SendRconCommand("exit");
+    }
+    else
+    {
+        printf("Successful connect to Redis server!");
+    }
 
     SetWorldTime(22);//красиво
     SetWeather(5);
@@ -1761,6 +1785,12 @@ public OnGameModeExit()
             PlayerTextDrawDestroy(i, HMS44[i]);//удаляем текстдравы максимальной горизонтальной скорости
         }
         NulledPlayer(i);
+    }
+    if (rc != REDIS_ERROR_CONNECT_GENERIC
+            || rc !=  REDIS_ERROR_CONNECT_FAIL
+            || rc != REDIS_ERROR_CONNECT_AUTH)
+    {
+        Redis_Disconnect(r_client);
     }
 
     if (MYSQL_INVALID_HANDLE != ServerDB)

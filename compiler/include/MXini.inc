@@ -192,7 +192,7 @@ static stock
 		код ошибки < 0 или ИД_открытого_файла
 */
 
-stock ini_createFile ( szFilePath[], szDefaultContent[] = "" )
+stock ini_createFile ( const szFilePath[], const szDefaultContent[] = "" )
 {
 	//
 	//	несколько блоков с проверками
@@ -310,7 +310,7 @@ stock ini_createFile ( szFilePath[], szDefaultContent[] = "" )
 		код ошибки < 0 или ИД_открытого_файла
 */
 
-stock ini_openFile ( szFilePath[] )
+stock ini_openFile ( const szFilePath[] )
 {
 	//
 	//	несколько блоков с проверками
@@ -384,7 +384,7 @@ stock ini_openFile ( szFilePath[] )
 			// запомнив все позиции INI_DELIMITER и их кол-во
 			for ( new i = 0, symbol; i < nFileSize && i < INI_MAX_FILE_SIZE; i++ )
 			{
-				symbol = fgetchar( pFile, 0, false ); // читаем из файла следующий символ
+				symbol = fgetchar( pFile, false ); // читаем из файла следующий символ
 
 				if (
 						symbol == INI_DELIMITER // если символ это INI_DELIMITER
@@ -511,7 +511,7 @@ stock ini_closeFile ( nFilePointer )
 		код ошибки < 0 или 0 при успехе
 */
 
-stock ini_getString ( nFilePointer, szKeyName[], szReturnValue[], nSizeOfReturn = sizeof(szReturnValue) )
+stock ini_getString ( nFilePointer, const szKeyName[], szReturnValue[], nSizeOfReturn = sizeof(szReturnValue) )
 {
 	// ----------------
 	if // если ИД открытого файла указан неверно
@@ -661,7 +661,7 @@ stock ini_getString ( nFilePointer, szKeyName[], szReturnValue[], nSizeOfReturn 
 		код ошибки < 0 или 0 при успехе
 */
 
-stock ini_getInteger ( nFilePointer, szKeyName[], & nReturnValue )
+stock ini_getInteger ( nFilePointer, const szKeyName[], & nReturnValue )
 {
 	// ----------------
 	if // если ИД открытого файла указан неверно
@@ -815,7 +815,7 @@ stock ini_getInteger ( nFilePointer, szKeyName[], & nReturnValue )
 		код ошибки < 0 или 0 при успехе
 */
 
-stock ini_getFloat ( nFilePointer, szKeyName[], & Float: fReturnValue )
+stock ini_getFloat ( nFilePointer, const szKeyName[], & Float: fReturnValue )
 {
 	// ----------------
 	if // если ИД открытого файла указан неверно
@@ -977,7 +977,7 @@ stock ini_getFloat ( nFilePointer, szKeyName[], & Float: fReturnValue )
 		код ошибки < 0 или 0 при успехе
 */
 
-stock ini_setString ( nFilePointer, szKeyName[], szKeyValue[] )
+stock ini_setString ( nFilePointer, const szKeyName[], const szKeyValue[] )
 {
 	// ----------------
 	if // если ИД открытого файла указан неверно
@@ -1250,7 +1250,7 @@ stock ini_setString ( nFilePointer, szKeyName[], szKeyValue[] )
 		код ошибки < 0 или 0 при успехе
 */
 
-stock ini_setInteger ( nFilePointer, szKeyName[], nKeyValue )
+stock ini_setInteger ( nFilePointer, const szKeyName[], nKeyValue )
 {
 	// ----------------
 	if // если ИД открытого файла указан неверно
@@ -1535,7 +1535,7 @@ stock ini_setInteger ( nFilePointer, szKeyName[], nKeyValue )
 		код ошибки < 0 или 0 при успехе
 */
 
-stock ini_setFloat ( nFilePointer, szKeyName[], Float: fKeyValue )
+stock ini_setFloat ( nFilePointer, const szKeyName[], Float: fKeyValue )
 {
 	// ----------------
 	if // если ИД открытого файла указан неверно

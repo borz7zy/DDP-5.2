@@ -6,3 +6,7 @@
 
 log.txt
 logs/
+
+mysql.ini
+
+scriptfiles/redis_connect.ini
