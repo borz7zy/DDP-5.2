@@ -91,6 +91,7 @@ enum
 
 new MySQL:ServerDB;
 new Redis:r_client;
+new r_connect_status;
 
 //==========================Money Bag========================
 enum mbinfo
@@ -1492,10 +1493,10 @@ public OnGameModeInit()
         ini_getString(iniFile, "auth", rauth);
         ini_closeFile(iniFile);
     }
-    new rc = Redis_Connect(rhost, rport, rauth, r_client);
-    if (rc == REDIS_ERROR_CONNECT_GENERIC
-            || rc ==  REDIS_ERROR_CONNECT_FAIL
-            || rc == REDIS_ERROR_CONNECT_AUTH)
+    r_connect_status = Redis_Connect(rhost, rport, rauth, r_client);
+    if (r_connect_status == REDIS_ERROR_CONNECT_GENERIC
+            || r_connect_status ==  REDIS_ERROR_CONNECT_FAIL
+            || r_connect_status == REDIS_ERROR_CONNECT_AUTH)
     {
         printf("Error connect to Redis server, shutdown!");
         SendRconCommand("exit");
@@ -1786,9 +1787,10 @@ public OnGameModeExit()
         }
         NulledPlayer(i);
     }
-    if (rc != REDIS_ERROR_CONNECT_GENERIC
-            || rc !=  REDIS_ERROR_CONNECT_FAIL
-            || rc != REDIS_ERROR_CONNECT_AUTH)
+
+    if (r_connect_status != REDIS_ERROR_CONNECT_GENERIC
+            || r_connect_status !=  REDIS_ERROR_CONNECT_FAIL
+            || r_connect_status != REDIS_ERROR_CONNECT_AUTH)
     {
         Redis_Disconnect(r_client);
     }
