@@ -53,6 +53,7 @@ ENV DDP_REDIS_AUTH=${DDP_REDIS_AUTH:-auth_pass}
 #запускаем питоновские скрипты генерации
 RUN python3 generate_mysql.py
 RUN python3 get_env_params.py
+RUN python3 generate_redis.py
 
 #даем права на запуск и запускаем
 RUN chmod +x omp-server
